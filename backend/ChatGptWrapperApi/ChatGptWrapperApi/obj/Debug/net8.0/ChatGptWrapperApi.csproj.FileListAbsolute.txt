@@ -1,0 +1,8 @@
+C:\Users\sande\Documents\GitHub\ChatGPT_Wrapper\wrapper\backend\ChatGptWrapperApi\ChatGptWrapperApi\obj\Debug\net8.0\ChatGptWrapperApi.csproj.AssemblyReference.cache
+C:\Users\sande\Documents\GitHub\ChatGPT_Wrapper\wrapper\backend\ChatGptWrapperApi\ChatGptWrapperApi\obj\Debug\net8.0\ChatGptWrapperApi.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\sande\Documents\GitHub\ChatGPT_Wrapper\wrapper\backend\ChatGptWrapperApi\ChatGptWrapperApi\obj\Debug\net8.0\ChatGptWrapperApi.AssemblyInfoInputs.cache
+C:\Users\sande\Documents\GitHub\ChatGPT_Wrapper\wrapper\backend\ChatGptWrapperApi\ChatGptWrapperApi\obj\Debug\net8.0\ChatGptWrapperApi.AssemblyInfo.cs
+C:\Users\sande\Documents\GitHub\ChatGPT_Wrapper\wrapper\backend\ChatGptWrapperApi\ChatGptWrapperApi\obj\Debug\net8.0\ChatGptWrapperApi.csproj.CoreCompileInputs.cache
+C:\Users\sande\Documents\GitHub\ChatGPT_Wrapper\wrapper\backend\ChatGptWrapperApi\ChatGptWrapperApi\obj\Debug\net8.0\ChatGptWrapperApi.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\sande\Documents\GitHub\ChatGPT_Wrapper\wrapper\backend\ChatGptWrapperApi\ChatGptWrapperApi\obj\Debug\net8.0\ChatGptWrapperApi.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\sande\Documents\GitHub\ChatGPT_Wrapper\wrapper\backend\ChatGptWrapperApi\ChatGptWrapperApi\obj\Debug\net8.0\ChatGptWrapperApi.sourcelink.json
