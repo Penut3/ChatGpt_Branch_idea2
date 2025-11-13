@@ -1,0 +1,34 @@
+﻿using Application.DTOs.ChatDto;
+using Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace API.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ChatController : ControllerBase
+    {
+        private readonly IChatService _chatService;
+
+        public ChatController(IChatService chatService)
+        {
+            _chatService = chatService;
+        }
+
+        [HttpPost("CreateChat")]
+  
+        public async Task<IActionResult> CreateChat([FromBody] ChatCreateDto chatCreateDto) 
+        {
+            var res = await _chatService.CreateChat(chatCreateDto);
+            return Ok(res);
+        }
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetChats()
+        {
+            var res = await _chatService.GetAllChats();
+            return Ok(res);
+        }
+    }
+}

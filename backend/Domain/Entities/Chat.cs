@@ -1,0 +1,24 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities
+{
+    public class Chat : BaseEntity
+    {
+        public string UserRequest { get; set; }
+        public string? ChatTitle { get; set; } // generated title name from ai or first words of UserRequest
+
+        public string Response { get; set; }
+
+        public Guid? Createdby { get; set; } // User from JWT
+
+        public int? ContextHealth { get; set; } //Will be set after the request to OpenAi api. And is calculated by the whole chat context length.
+
+
+        public Guid? ParentChatId { get; set; }
+        public Chat? ParentChat { get; set; }
+    }
+}

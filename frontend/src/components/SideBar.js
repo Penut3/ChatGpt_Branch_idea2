@@ -1,6 +1,7 @@
 import React from "react";
 import { Button, List, ListItem, ListItemText, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AltRouteIcon from '@mui/icons-material/AltRoute';
 
 export default function SideBar({ chats, selectedIdx, onSelect, onNewChat, onDeleteChat }) {
   const [hoveredIdx, setHoveredIdx] = React.useState(null);
@@ -22,6 +23,14 @@ export default function SideBar({ chats, selectedIdx, onSelect, onNewChat, onDel
       <div style={{display:'flex', justifyContent:'center', width:'100%'}} >
         <h1 className="font1" style={{color:'red'}}>CrabGPT</h1>
       </div>
+      <Button
+        variant="contained"
+        fullWidth
+        onClick={onNewChat}
+        style={{backgroundColor:'black', marginBottom:'10px'}}
+      >
+        BRANCHES <AltRouteIcon style={{ transform: 'rotate(90deg)' }} /> 
+      </Button>
 
       <Button
         variant="contained"

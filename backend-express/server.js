@@ -11,9 +11,9 @@ const port = 3001;
 app.use(cors());
 app.use(express.json());
 
-const token = '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';
+const token = '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';
 const endpoint = "https://models.github.ai/inference";
-const model = "openai/gpt-4.1";
+const model = "openai/gpt-5";
 
 const client = new OpenAI({ baseURL: endpoint, apiKey: token });
 

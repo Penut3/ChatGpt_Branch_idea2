@@ -1,0 +1,24 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+WORKDIR /app
+
+COPY *.sln ./
+COPY Application/*.csproj ./Application/
+COPY Domain/*.csproj ./Domain/
+COPY Infrastructure/*.csproj ./Infrastructure/
+COPY WebProject1_Api/*.csproj ./WebProject1_Api/
+
+RUN dotnet restore
+
+COPY Application/ ./Application/
+COPY Domain/ ./Domain/
+COPY Infrastructure/ ./Infrastructure/
+COPY WebProject1_Api/ ./WebProject1_Api/
+
+RUN dotnet publish WebProject1_Api -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app/publish .
+EXPOSE 80
+ENTRYPOINT ["dotnet", "Presentation.dll"]
