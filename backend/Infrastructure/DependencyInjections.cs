@@ -6,7 +6,6 @@ using Domain.Helpers;
 
 using Infrastructure.Configuration;
 using Infrastructure.Repositories;
-using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,9 +18,7 @@ namespace Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
 
-            var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-                             ?? configuration.GetConnectionString("DefaultConnection");
-
+            var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 
             services.AddDbContext<DataContext>(options =>
             {
@@ -29,13 +26,12 @@ namespace Infrastructure
             });
 
             AddRepositories(services);
-
             AddConfiguration(services, configuration);
-
-         
 
             return services;
         }
+
+
 
         private static IServiceCollection AddConfiguration(IServiceCollection services, IConfiguration configuration)
         {
@@ -52,6 +48,7 @@ namespace Infrastructure
             
             //services.AddScoped<ISupabaseAuthService, SupabaseAuthService>();
             services.AddScoped<ChatService>();
+            services.AddScoped<IAiChatService, AiChatService>();
            
             //services.AddScoped<IJwtService, JwtService>();
 

@@ -10,24 +10,24 @@ namespace Application.Services
     public class ChatService : IChatService
     {
         private readonly IBaseRepository<Chat> _chatRepo;
+        private readonly IAiChatService _aiChatService;
 
-        public ChatService(IBaseRepository<Chat> chatRepo)
+        public ChatService(IBaseRepository<Chat> chatRepo, IAiChatService aiChatService)
         {
             _chatRepo = chatRepo;
+            _aiChatService = aiChatService;
         }
 
         public async Task<Chat> CreateChat(ChatCreateDto chatCreateDto)
         {
-            if (chatCreateDto == null)
-                throw new ArgumentNullException(nameof(chatCreateDto));
-
+            var aiResponse = await _aiChatService.GetReplyAsync(chatCreateDto.UserRequest);
             var chat= new Chat
             {
                 Id = Guid.NewGuid(),
                 ChatTitle = "test chat title",
                 UserRequest = chatCreateDto.UserRequest,
                 ParentChatId = chatCreateDto.ParentChatId,
-                Response = "Test response", // Response from ai
+                Response = aiResponse,
                 ContextHealth = 100,
                 Createdby = null,
                 CreatedAt = DateTime.UtcNow

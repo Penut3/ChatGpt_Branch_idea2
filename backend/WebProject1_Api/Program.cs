@@ -1,16 +1,21 @@
 using Application;
+using System;
 using Application.Interfaces.Services;
 using DotNetEnv;
 using Infrastructure;
 using Microsoft.OpenApi.Models;
-using Presentation.Identity;
+using OpenAI;
+using OpenAI.Chat;
+using System.ClientModel;
+//using Presentation.Identity;
 using System.Security.Claims;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Load environment variables from .env
-Env.Load("C:\\Users\\sande\\Documents\\GitHub\\ChatGPT_Branch_Concept2\\Backend\\.env");
+Env.Load("C:\\Users\\sande\\Documents\\GitHub\\ChatGPT_Branch_Concept2\\backend\\.env");
+var githubToken = Environment.GetEnvironmentVariable("GITHUB_MODELS_TOKEN");
 
 // Register infrastructure + application layers
 builder.Services.AddHttpClient(); // must be before SupabaseAuthServic
@@ -95,6 +100,17 @@ builder.Services.AddAuthorization(options =>
     //        context.User.IsInRole("Admin") || context.User.IsInRole("Manager")));
 });
 
+
+builder.Services.AddSingleton<ChatClient>(_ =>
+{
+    return new ChatClient(
+        model: "openai/gpt-5",                               // same as in your Node app
+        credential: new ApiKeyCredential(githubToken),
+        options: new OpenAIClientOptions
+        {
+            Endpoint = new Uri("https://models.github.ai/inference")
+        });
+});
 
 // Configure CORS
 builder.Services.AddCors(options =>

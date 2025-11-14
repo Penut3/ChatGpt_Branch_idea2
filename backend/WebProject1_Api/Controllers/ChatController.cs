@@ -17,7 +17,6 @@ namespace API.Controllers
         }
 
         [HttpPost("CreateChat")]
-  
         public async Task<IActionResult> CreateChat([FromBody] ChatCreateDto chatCreateDto) 
         {
             var res = await _chatService.CreateChat(chatCreateDto);
