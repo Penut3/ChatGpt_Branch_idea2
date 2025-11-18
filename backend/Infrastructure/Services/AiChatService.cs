@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces.Services;
 using OpenAI.Chat;
+using static Application.Interfaces.Services.IAiChatService;
 
 public class AiChatService : IAiChatService
 {
@@ -10,15 +11,28 @@ public class AiChatService : IAiChatService
         _client = client;
     }
 
-    public async Task<string> GetReplyAsync(string prompt)
+    public async Task<string> GetReplyAsync(IReadOnlyList<AiMessage> messages)
     {
-        var messages = new List<ChatMessage>
-        {
-            new UserChatMessage(prompt)
-        };
+        var openAiMessages = new List<ChatMessage>();
 
-        var result = await _client.CompleteChatAsync(messages);
-        var reply = result.Value.Content[0].Text;
-        return reply;
+        foreach (var msg in messages)
+        {
+            switch (msg.Role)
+            {
+                case AiMessageRole.System:
+                    openAiMessages.Add(new SystemChatMessage(msg.Content));
+                    break;
+                case AiMessageRole.Assistant:
+                    openAiMessages.Add(new AssistantChatMessage(msg.Content));
+                    break;
+                case AiMessageRole.User:
+                default:
+                    openAiMessages.Add(new UserChatMessage(msg.Content));
+                    break;
+            }
+        }
+
+        var result = await _client.CompleteChatAsync(openAiMessages);
+        return result.Value.Content[0].Text;
     }
 }
