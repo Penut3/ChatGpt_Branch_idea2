@@ -17,7 +17,7 @@ namespace Domain.Entities
 
         public int? ContextHealth { get; set; } //Will be set after the request to OpenAi api. And is calculated by the whole chat context length.
 
-
+        public Guid? RootChatId { get; set; }
         public Guid? ParentChatId { get; set; } //If null this act as the root of the tree.
         public Chat? ParentChat { get; set; }
 

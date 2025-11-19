@@ -3,6 +3,7 @@ using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Text;
 using static Application.Interfaces.Services.IAiChatService;
@@ -26,6 +27,7 @@ namespace Application.Services
         new AiMessage { Role = AiMessageRole.System, Content = "You are a helpful assistant." }
     };
 
+            // Create chat chain
             if (chatCreateDto.ParentChatId.HasValue)
             {
                 var chain = await GetChatChainAsync(chatCreateDto.ParentChatId.Value);
@@ -49,6 +51,7 @@ namespace Application.Services
                 }
             }
 
+            // Add new userRequest to request
             messages.Add(new AiMessage
             {
                 Role = AiMessageRole.User,
@@ -57,17 +60,36 @@ namespace Application.Services
 
             var aiResponse = await _aiChatService.GetReplyAsync(messages);
 
-            // Get the first 20 characters or the full response if shorter
+            // Get the first 20 characters or the full response if shorter for ChatTitle
             string chatTitle = aiResponse.Length > 20
                 ? aiResponse.Substring(0, 20)
                 : aiResponse;
 
+            // Pre-generate the new chat Id so we can use it as root when needed
+            var newChatId = Guid.NewGuid();
+
+            // Figure out RootChatId
+            Guid? rootChatId;
+
+            if (!chatCreateDto.ParentChatId.HasValue)
+            {
+                // This is the first chat in the thread → it is the root
+                rootChatId = newChatId;
+            }
+            else
+            {
+                var parentChat = await _chatRepo.GetById(chatCreateDto.ParentChatId.Value);
+
+                // If parent already has a root, reuse it; otherwise the parent *is* the root
+                rootChatId = parentChat.RootChatId ?? parentChat.Id;
+            }
 
             var entity = new Chat
             {
-                Id = Guid.NewGuid(),
+                Id = newChatId,
                 ChatTitle = chatTitle,
                 UserRequest = chatCreateDto.UserRequest,
+                RootChatId = rootChatId,
                 ParentChatId = chatCreateDto.ParentChatId,
                 Response = aiResponse,
                 ContextHealth = 100,
@@ -78,6 +100,7 @@ namespace Application.Services
             await _chatRepo.Add(entity);
             return entity;
         }
+
 
 
 
