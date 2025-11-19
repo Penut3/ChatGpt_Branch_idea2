@@ -33,6 +33,7 @@ public class AiChatService : IAiChatService
         }
 
         var result = await _client.CompleteChatAsync(openAiMessages);
-        return result.Value.Content[0].Text;
+        var reply = result.Value.Content[0].Text;
+        return reply;
     }
 }

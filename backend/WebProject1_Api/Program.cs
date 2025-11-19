@@ -1,12 +1,14 @@
 using Application;
-using System;
 using Application.Interfaces.Services;
 using DotNetEnv;
 using Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
+
+using System;
 //using Presentation.Identity;
 using System.Security.Claims;
 
@@ -41,7 +43,7 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddAutoMapper(typeof(Program));
+
 
 // Swagger setup with JWT support
 builder.Services.AddSwaggerGen(c =>

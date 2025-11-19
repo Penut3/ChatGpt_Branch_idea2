@@ -21,6 +21,7 @@ namespace Infrastructure.Migrations
                     Response = table.Column<string>(type: "text", nullable: false),
                     Createdby = table.Column<Guid>(type: "uuid", nullable: true),
                     ContextHealth = table.Column<int>(type: "integer", nullable: true),
+                    RootChatId = table.Column<Guid>(type: "uuid", nullable: true),
                     ParentChatId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false)

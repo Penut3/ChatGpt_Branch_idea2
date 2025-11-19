@@ -49,6 +49,9 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("RootChatId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("UserRequest")
                         .IsRequired()
                         .HasColumnType("text");
