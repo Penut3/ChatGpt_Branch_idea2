@@ -10,7 +10,7 @@ namespace Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             AddServices(services);
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            //services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddTransient<IChatService, ChatService>();
             
             return services;

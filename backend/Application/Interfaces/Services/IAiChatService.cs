@@ -9,19 +9,20 @@ namespace Application.Interfaces.Services
     public interface IAiChatService
     {
         //Task<string> GetReplyAsync(string prompt);
-        public enum AiMessageRole
-    {
-        System,
-        User,
-        Assistant
-    }
+        enum AiMessageRole
+        {
+            System,
+            User,
+            Assistant
+        }
+        class AiMessage
+        {
+            public AiMessageRole Role { get; set; }
+            public string Content { get; set; }
+        }
+
         Task<string> GetReplyAsync(IReadOnlyList<AiMessage> messages);
 
-        public class AiMessage
-    {
-        public AiMessageRole Role { get; set; }
-        public string Content { get; set; }
-    }
-
+       
     }
 }

@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20251114080205_chat")]
+    [Migration("20251119085906_chat")]
     partial class chat
     {
         /// <inheritdoc />
@@ -51,6 +51,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Response")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid?>("RootChatId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("UserRequest")
                         .IsRequired()
