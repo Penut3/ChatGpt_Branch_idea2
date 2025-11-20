@@ -160,5 +160,26 @@ namespace Application.Services
         }
 
 
+        public async Task<IEnumerable<Chat>> GetChatById(Guid id)
+        {
+            var currentChat = await _chatRepo.GetById(id);
+
+            if (currentChat == null)
+            {
+                // or throw NotFoundException/return null depending on how you handle 404s
+                return Enumerable.Empty<Chat>();
+            }
+
+            if (!currentChat.ParentChatId.HasValue)
+            {
+                // No parent => just return this chat as a single-element collection
+                return new[] { currentChat };
+            }
+
+            var chatChain = await GetChatChainAsync(id);
+            return chatChain;
+        }
+
+
     }
 }
