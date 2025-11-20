@@ -48,6 +48,8 @@ namespace Infrastructure
             
             //services.AddScoped<ISupabaseAuthService, SupabaseAuthService>();
             services.AddScoped<ChatService>();
+            services.AddScoped<ChatModelService>();
+
             services.AddScoped<IAiChatService, AiChatService>();
            
             //services.AddScoped<IJwtService, JwtService>();
