@@ -16,6 +16,7 @@ export default function SideBar({
   onNewChat,
   onDeleteChat,
   loading,
+  onShowBranches
 }) {
   const [hoveredIdx, setHoveredIdx] = React.useState(null);
 
@@ -43,7 +44,7 @@ export default function SideBar({
       <Button
         variant="contained"
         fullWidth
-        onClick={onNewChat}
+        onClick={onShowBranches} 
         style={{ backgroundColor: "black", marginBottom: "10px" }}
       >
         BRANCHES <AltRouteIcon style={{ transform: "rotate(90deg)" }} />

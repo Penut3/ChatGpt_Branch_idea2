@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
 import ChatWindow from "../components/ChatWindow";
+import BranchSidebar from "../components/BranchSidebar";
 
 export default function HomePage() {
   const [chatHeaders, setChatHeaders] = useState([]);      // sidebar items
@@ -9,7 +10,11 @@ export default function HomePage() {
   const [loadingHeaders, setLoadingHeaders] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
   const [isSending, setIsSending] = useState(false);
-
+  
+  
+  const [showBranches, setShowBranches] = useState(false);
+  const [branches, setBranches] = useState([]); // you can fill this later
+  const [loadingBranches, setLoadingBranches] = useState(false);
 
 const BACKEND_URL = "https://localhost:7151/api/";
   // Load headers (one per chat chain)
@@ -191,8 +196,26 @@ const handleSend = async (prompt) => {
 };
 
 
+const handleSelectBranch = (index, branch) => {
+  console.log("Selected branch:", index, branch);
+  // TODO: load a branch chat when you define what a branch is
+};
+
+
   return (
     <div className="viewport" style={{ display: "flex" }}>
+     
+
+
+        {/* SIDEBAR SWITCHING */}
+    {showBranches ? (
+      <BranchSidebar
+        branches={branches}
+        onSelectBranch={handleSelectBranch}
+        loadingBranches={loadingBranches}
+        onBackToChats={() => setShowBranches(false)}
+      />
+    ) : (
       <SideBar
         chats={chatHeaders}
         selectedIdx={selectedIdx}
@@ -200,7 +223,11 @@ const handleSend = async (prompt) => {
         onNewChat={createNewChat}
         onDeleteChat={deleteChat}
         loading={loadingHeaders}
+        onShowBranches={() => setShowBranches(true)}
       />
+    )}
+
+
       <ChatWindow
         history={history}
         onSend={handleSend}
