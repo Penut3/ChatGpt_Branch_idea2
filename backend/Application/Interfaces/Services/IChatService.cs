@@ -13,6 +13,8 @@ namespace Application.Interfaces.Services
         Task<Chat> CreateChat(ChatCreateDto chatCreateDto);
         Task<IEnumerable<Chat>> GetAllChats();
 
-        Task<IEnumerable<Chat>> GetChatById(Guid id);
+        Task<IEnumerable<ChatGetChainDto>> GetChatById(Guid id);
+        Task<IEnumerable<ChatGetHeaderDto>> GetChatHeader();
+        Task<IEnumerable<ChatGetHeaderDto>> GetChatHeaderLatest();
     }
 }

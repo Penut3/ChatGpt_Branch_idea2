@@ -5,6 +5,7 @@ using Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Data;
 using System.Text;
 using static Application.Interfaces.Services.IAiChatService;
@@ -139,7 +140,11 @@ namespace Application.Services
 
             while (current != null && visited.Add(current.Id))
             {
-                list.Insert(0, current);
+                if (!list.Any(c => c.Id == current.Id))
+                {
+                    list.Insert(0, current);
+                }
+
 
                 current = current.ParentChatId.HasValue
                     ? await _chatRepo.GetById(current.ParentChatId.Value)
@@ -160,24 +165,89 @@ namespace Application.Services
         }
 
 
-        public async Task<IEnumerable<Chat>> GetChatById(Guid id)
+        public async Task<IEnumerable<ChatGetChainDto>> GetChatById(Guid id)
         {
             var currentChat = await _chatRepo.GetById(id);
 
             if (currentChat == null)
             {
                 // or throw NotFoundException/return null depending on how you handle 404s
-                return Enumerable.Empty<Chat>();
-            }
-
-            if (!currentChat.ParentChatId.HasValue)
-            {
-                // No parent => just return this chat as a single-element collection
-                return new[] { currentChat };
+                return Enumerable.Empty<ChatGetChainDto>();
             }
 
             var chatChain = await GetChatChainAsync(id);
-            return chatChain;
+
+            var list = new List<ChatGetChainDto>();
+            foreach (var chat in chatChain)
+            {
+                var currentDtoObject = new ChatGetChainDto
+                {
+                    Id = chat.Id,
+                    UserRequest = chat.UserRequest,
+                    ChatTitle = chat.ChatTitle,
+                    Response = chat.Response,
+                    CreatedAt = chat.CreatedAt,
+                    ParentChatId = chat.ParentChatId,
+                    RootChatId = chat.RootChatId,
+                    ContextHealth = chat.ContextHealth
+                };
+
+                list.Add(currentDtoObject);
+            }
+            return list;
+        }
+
+
+
+
+
+
+
+        public async Task<IEnumerable<ChatGetHeaderDto>> GetChatHeader()
+        {
+            var all = await _chatRepo.GetAll();
+
+            return all.Select(chat => new ChatGetHeaderDto
+            {
+                Id = chat.Id,
+                ChatTitle = chat.ChatTitle,
+                CreatedAt = chat.CreatedAt,
+                ParentChatId = chat.ParentChatId,
+                RootChatId = chat.RootChatId,
+                ContextHealth = chat.ContextHealth
+            });
+        }
+
+
+        public async Task<IEnumerable<ChatGetHeaderDto>> GetChatHeaderLatest()
+        {
+            var all = (await _chatRepo.GetAll()).ToList();
+
+            // All chat IDs that are used as a parent (i.e. they HAVE children)
+            var parentIds = new HashSet<Guid>(
+                all.Where(c => c.ParentChatId.HasValue)
+                   .Select(c => c.ParentChatId.Value)
+            );
+
+            // Leaf chats: those that are NOT a parent of any other chat
+            var leafChats = all
+                .Where(c => !parentIds.Contains(c.Id))
+                .ToList();
+
+            // Map to DTO and (optionally) sort by newest first
+            var headers = leafChats
+                .Select(chat => new ChatGetHeaderDto
+                {
+                    Id = chat.Id,
+                    ChatTitle = chat.ChatTitle,
+                    CreatedAt = chat.CreatedAt,
+                    ParentChatId = chat.ParentChatId,
+                    RootChatId = chat.RootChatId,
+                    ContextHealth = chat.ContextHealth
+                })
+                .OrderByDescending(h => h.CreatedAt); // optional
+
+            return headers;
         }
 
 

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@mui/material";
 import ReactMarkdown from "react-markdown";
 
-export default function ChatWindow({ history, onSend }) {
+export default function ChatWindow({ history, onSend, loading }) {
   const [input, setInput] = useState("");
 
   const handleSubmit = () => {
@@ -11,9 +11,11 @@ export default function ChatWindow({ history, onSend }) {
   };
 
   return (
-    <div className="ai-section">
+    <div className="ai-section" style={{ marginLeft: 230, width: "100%" }}>
       <div className="output-section">
-        {history.length === 0 ? (
+        {loading ? (
+          <p>Loading chat...</p>
+        ) : history.length === 0 ? (
           <p>Empty chat</p>
         ) : (
           history.map((item, index) => (
@@ -23,14 +25,14 @@ export default function ChatWindow({ history, onSend }) {
                   display: "flex",
                   justifyContent: "flex-end",
                   paddingTop: "20px",
-                  paddingBottom: "20px"
+                  paddingBottom: "20px",
                 }}
               >
                 <div
                   style={{
                     backgroundColor: "var(--grey)",
                     padding: "10px",
-                    borderRadius: "8px"
+                    borderRadius: "8px",
                   }}
                 >
                   {item.prompt}
@@ -56,7 +58,12 @@ export default function ChatWindow({ history, onSend }) {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            style={{ right: "10px", position: "absolute", bottom: "7px", backgroundColor:'black' }}
+            style={{
+              right: "10px",
+              position: "absolute",
+              bottom: "7px",
+              backgroundColor: "black",
+            }}
           >
             Submit
           </Button>

@@ -2,96 +2,173 @@ import React, { useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
 import ChatWindow from "../components/ChatWindow";
 
-const STORAGE_KEY = "my_chatgpt_chats";
-
 export default function HomePage() {
-  // Load from localStorage or start with one empty chat
-  const [chats, setChats] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved
-      ? JSON.parse(saved)
-      : [{ title: "New Chat", history: [] }];
-  });
-  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [chatHeaders, setChatHeaders] = useState([]);      // sidebar items
+  const [selectedIdx, setSelectedIdx] = useState(null);    // index in chatHeaders
+  const [history, setHistory] = useState([]);              // full chain for selected chat
+  const [loadingHeaders, setLoadingHeaders] = useState(false);
+  const [loadingChat, setLoadingChat] = useState(false);
 
-  // Persist chats to localStorage on every change
+
+const BACKEND_URL = "https://localhost:7151/api/";
+  // Load headers (one per chat chain)
+  const loadChats = async () => {
+    try {
+      setLoadingHeaders(true);
+      const res = await fetch(`${BACKEND_URL}chat/ChatHeaders/Latest`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+      // data should be an array of something like:
+      // { id, chatTitle, createdAt, parentChatId, rootChatId, contextHealth }
+      setChatHeaders(data);
+    } catch (err) {
+      console.error("Error loading chats:", err);
+    } finally {
+      setLoadingHeaders(false);
+    }
+  };
+
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
-  }, [chats]);
+    loadChats();
+  }, []);
 
-  // Create a brand‐new chat
+  // Load full chain for a given chat id (root or any chat in the chain)
+  const loadChatChain = async (chatId) => {
+    if (!chatId) {
+      setHistory([]);
+      return;
+    }
+
+    try {
+      setLoadingChat(true);
+      const res = await fetch(`${BACKEND_URL}chat/${chatId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const chain = await res.json(); // array of ChatGetChainDto, sorted root -> latest
+
+      const mapped = chain.map((c) => ({
+        prompt: c.userRequest,
+        response: c.response,
+        chatId: c.id,
+        rootChatId: c.rootChatId,
+      }));
+
+      setHistory(mapped);
+    } catch (err) {
+      console.error("Error loading chat chain:", err);
+    } finally {
+      setLoadingChat(false);
+    }
+  };
+
+  // When user clicks a chat in the sidebar
+  const handleSelectChat = async (idx) => {
+    setSelectedIdx(idx);
+    const header = chatHeaders[idx];
+    if (!header) return;
+
+    // We assume header.id is the root chat or at least some chat in the chain
+    await loadChatChain(header.id);
+  };
+
+  // Start a brand new chat (not yet in sidebar)
   const createNewChat = () => {
-    setChats((prev) => [...prev, { title: "New Chat", history: [] }]);
-    setSelectedIdx(chats.length); // new chat is last one
+    setSelectedIdx(null);  // nothing selected in sidebar
+    setHistory([]);        // empty conversation
   };
 
-  //t
-  // Delete a chat
-  const deleteChat = (index) => {
-    const updatedChats = chats.filter((_, i) => i !== index);
-    setChats(updatedChats);
+  // TODO: implement delete endpoint if you want server-side delete
+  const deleteChat = async (index) => {
+    const header = chatHeaders[index];
+    if (!header) return;
+
+    // Example: call delete on backend (adjust URL & method)
+    try {
+      await fetch(`http://localhost:3001/api/chat/${header.id}`, {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.error("Error deleting chat:", err);
+    }
+
+    // Refresh headers & clear history if we deleted the selected one
+    const newHeaders = chatHeaders.filter((_, i) => i !== index);
+    setChatHeaders(newHeaders);
+
     if (selectedIdx === index) {
-      setSelectedIdx(updatedChats.length > 0 ? 0 : null); // Reset to first chat, or null if no chats remain
+      setSelectedIdx(null);
+      setHistory([]);
+    } else if (selectedIdx > index) {
+      setSelectedIdx((prev) => prev - 1);
     }
   };
 
-  // Send a prompt to your API, update the history, and—on the very first exchange—set the title
+  // Send a message
   const handleSend = async (prompt) => {
-  if (!prompt.trim()) return;
+    if (!prompt.trim()) return;
 
-  const chat = chats[selectedIdx];
-  
-  const messages = [
-    {
-      role: "system",
-      content: "asistant"
-    },
-    ...chat.history.flatMap(pair => [
-      { role: "user", content: pair.prompt },
-      { role: "assistant", content: pair.response }
-    ]),
-    { role: "user", content: prompt }
-  ];
+    // Use last message in history to know parentChatId & rootChatId
+    const lastMessage = history[history.length - 1];
+    const parentChatId = lastMessage ? lastMessage.chatId : null;
+    // const rootChatId = lastMessage ? lastMessage.rootChatId : null;
 
-  const res = await fetch("http://localhost:3001/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages }),
-  });
-  const { response } = await res.json();
+    // Adjust body shape to match your backend CreateChat endpoint
+    const body = {
+      userRequest: prompt,
+      parentChatId,   // null => new root
+      // rootChatId,
+    };
 
-  setChats((prev) => {
-    const copy = [...prev];
-    const chat = { ...copy[selectedIdx] };
+    try {
+      const res = await fetch(`${BACKEND_URL}chat/CreateChat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
-    chat.history = [...chat.history, { prompt, response }];
+      // Assume backend returns created chat dto:
+      // { id, userRequest, response, rootChatId, ... }
+      const created = await res.json();
 
-    if (copy[selectedIdx].history.length === 0) {
-      const first4 = prompt.split(/\s+/).slice(0, 4).join(" ");
-      chat.title = first4 || "Chat";
+      // After sending, reload the full chain using the rootChatId
+      const newRootId = created.rootChatId || created.id;
+      await loadChatChain(newRootId);
+
+      // Refresh headers so sidebar shows this chat (or updated title)
+      await loadChats();
+
+      // If no chat selected yet (new chat), select this one in sidebar
+      if (selectedIdx === null) {
+        const idx = chatHeaders.findIndex((h) => h.id === newRootId);
+        if (idx !== -1) {
+          setSelectedIdx(idx);
+        }
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
     }
-
-    copy[selectedIdx] = chat;
-    return copy;
-  });
-};
-
+  };
 
   return (
     <div className="viewport" style={{ display: "flex" }}>
       <SideBar
-        chats={chats}
+        chats={chatHeaders}
         selectedIdx={selectedIdx}
-        onSelect={setSelectedIdx}
+        onSelect={handleSelectChat}
         onNewChat={createNewChat}
-        onDeleteChat={deleteChat} // Pass delete function to SideBar
+        onDeleteChat={deleteChat}
+        loading={loadingHeaders}
       />
-      {chats.length > 0 && (
-        <ChatWindow
-          history={chats[selectedIdx].history}
-          onSend={handleSend}
-        />
-      )}
+      <ChatWindow
+        history={history}
+        onSend={handleSend}
+        loading={loadingChat}
+      />
     </div>
   );
 }
