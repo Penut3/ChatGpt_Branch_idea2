@@ -8,6 +8,7 @@ export default function HomePage() {
   const [history, setHistory] = useState([]);              // full chain for selected chat
   const [loadingHeaders, setLoadingHeaders] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
 
 const BACKEND_URL = "https://localhost:7151/api/";
@@ -108,51 +109,87 @@ const BACKEND_URL = "https://localhost:7151/api/";
     }
   };
 
-  // Send a message
-  const handleSend = async (prompt) => {
-    if (!prompt.trim()) return;
+// HomePage.jsx
+const handleSend = async (prompt) => {
+  if (!prompt.trim()) return;
+  setIsSending(true)
+  // Use last message to know parentChatId
+  const lastMessage = history[history.length - 1];
+  const parentChatId = lastMessage ? lastMessage.chatId : null;
 
-    // Use last message in history to know parentChatId & rootChatId
-    const lastMessage = history[history.length - 1];
-    const parentChatId = lastMessage ? lastMessage.chatId : null;
-    // const rootChatId = lastMessage ? lastMessage.rootChatId : null;
-
-    // Adjust body shape to match your backend CreateChat endpoint
-    const body = {
-      userRequest: prompt,
-      parentChatId,   // null => new root
-      // rootChatId,
-    };
-
-    try {
-      const res = await fetch(`${BACKEND_URL}chat/CreateChat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      // Assume backend returns created chat dto:
-      // { id, userRequest, response, rootChatId, ... }
-      const created = await res.json();
-
-      // After sending, reload the full chain using the rootChatId
-      const newRootId = created.rootChatId || created.id;
-      await loadChatChain(newRootId);
-
-      // Refresh headers so sidebar shows this chat (or updated title)
-      await loadChats();
-
-      // If no chat selected yet (new chat), select this one in sidebar
-      if (selectedIdx === null) {
-        const idx = chatHeaders.findIndex((h) => h.id === newRootId);
-        if (idx !== -1) {
-          setSelectedIdx(idx);
-        }
-      }
-    } catch (err) {
-      console.error("Error sending message:", err);
-    }
+  // 1) Optimistically add the user message with pending AI response
+  const tempMessage = {
+    prompt,
+    response: null,          // no AI response yet
+    chatId: null,            // unknown until backend returns
+    rootChatId: lastMessage ? lastMessage.rootChatId : null,
+    isPending: true,         // custom flag just for UI
   };
+
+  setHistory((prev) => [...prev, tempMessage]);
+
+  // 2) Call backend
+  const body = {
+    userRequest: prompt,
+    parentChatId, // null => new root
+  };
+
+  try {
+    const res = await fetch(`${BACKEND_URL}chat/CreateChat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    const created = await res.json();
+    const newRootId = created.rootChatId || created.id;
+    setIsSending(false)
+    // 3) Update the last pending message with real data from backend
+    setHistory((prev) => {
+      const copy = [...prev];
+      // find last pending message (in case user spam-clicks)
+      const idx = [...copy]
+        .reverse()
+        .findIndex((m) => m.isPending && m.prompt === prompt);
+
+      if (idx === -1) return copy;
+
+      // Because we reversed, need to map index back
+      const realIdx = copy.length - 1 - idx;
+
+      copy[realIdx] = {
+        prompt: created.userRequest,
+        response: created.response,
+        chatId: created.id,
+        rootChatId: newRootId,
+        // no more isPending
+      };
+
+      return copy;
+    });
+
+    // 4) (Optional but nice) refresh the headers
+    await loadChats();
+  } catch (err) {
+    console.error("Error sending message:", err);
+
+    // Optionally mark the pending message as errored
+    setHistory((prev) => {
+      const copy = [...prev];
+      const idx = copy.findIndex((m) => m.isPending && m.prompt === prompt);
+      if (idx === -1) return copy;
+
+      copy[idx] = {
+        ...copy[idx],
+        response: "Something went wrong sending this message.",
+        isPending: false,
+      };
+
+      return copy;
+    });
+  }
+};
+
 
   return (
     <div className="viewport" style={{ display: "flex" }}>
@@ -167,7 +204,7 @@ const BACKEND_URL = "https://localhost:7151/api/";
       <ChatWindow
         history={history}
         onSend={handleSend}
-        loading={loadingChat}
+        loading={isSending}
       />
     </div>
   );
