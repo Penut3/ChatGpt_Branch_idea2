@@ -14,7 +14,7 @@ namespace Application.DTOs.ChatDto
         public string Response { get; set; }
         public Guid? ParentChatId { get; set; }
         public Guid? RootChatId { get; set; }
-        public int? ContextHealth { get; set; }
+        public double? ContextHealth { get; set; }
 
         public DateTime CreatedAt { get; set; }
 }

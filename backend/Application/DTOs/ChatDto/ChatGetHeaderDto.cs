@@ -12,7 +12,7 @@ namespace Application.DTOs.ChatDto
         public string ChatTitle { get; set; }
         public Guid? ParentChatId { get; set; }
         public Guid? RootChatId { get; set; }
-        public int? ContextHealth { get; set; }
+        public double? ContextHealth { get; set; }
 
         public string UserRequest { get; set; }
 

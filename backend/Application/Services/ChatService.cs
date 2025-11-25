@@ -15,12 +15,14 @@ namespace Application.Services
     public class ChatService : IChatService
     {
         private readonly IBaseRepository<Chat> _chatRepo;
+        private readonly IBaseRepository<ChatModel> _chatModelRepo;
         private readonly IAiChatService _aiChatService;
         private readonly ILogger<ChatService> _logger;
 
-        public ChatService(IBaseRepository<Chat> chatRepo, IAiChatService aiChatService, ILogger<ChatService> logger)
+        public ChatService(IBaseRepository<Chat> chatRepo, IBaseRepository<ChatModel> chatModelRepo, IAiChatService aiChatService, ILogger<ChatService> logger)
         {
             _chatRepo = chatRepo;
+            _chatModelRepo = chatModelRepo;
             _aiChatService = aiChatService;
             _logger = logger;
         }
@@ -77,8 +79,61 @@ namespace Application.Services
 
             _logger.LogInformation("🤖 Sending {Count} messages to AI model.", messages.Count);
 
+            //Get Model
+            var testModelId = Guid.Parse("866993a1-ffda-4124-8d3e-b389ae3c06fc");
+            var model = await _chatModelRepo.GetById(testModelId);
+            var MaxContextWindowTokens = model.ContextWindowTokens;
+            var MaxContextWindowCharacters = MaxContextWindowTokens * 4; // Rough estimate: 1 token ~ 4 characters
+
+            _logger.LogInformation("MaxContextWindow Characters: ", MaxContextWindowCharacters);
+
+            //Calculate total precentage of context window used
+            var usedContextWindowCharacters = messages.Sum(m => m.Content?.Length ?? 0);
+            _logger.LogInformation("used ContextWindow {UsedContextWindowCharacters}", usedContextWindowCharacters);
+
+            var usedContextWindowPercentage =
+            100.0 * usedContextWindowCharacters / MaxContextWindowCharacters;
+
+
+            _logger.LogInformation("📊 Context window usage: {UsedPercentage}%", usedContextWindowPercentage);
+
+            //Compare message to MaxContextWindowCharacters and trim if necessary
+            if (usedContextWindowCharacters > MaxContextWindowCharacters)
+            {
+                _logger.LogWarning("⚠️ Messages exceed max context window. Trimming...");
+
+                var totalChars = usedContextWindowCharacters;
+
+                while (totalChars > MaxContextWindowCharacters)
+                {
+                    // remove oldest non-system message
+                    var indexToRemove = messages.FindIndex(m => m.Role != AiMessageRole.System);
+
+                    if (indexToRemove == -1)
+                    {
+                        _logger.LogWarning("🚫 Only system messages remain — cannot trim further.");
+                        break;
+                    }
+
+                    _logger.LogWarning("🗑 Removing oldest message: {MsgType} '{Preview}'",
+                        messages[indexToRemove].Role,
+                        messages[indexToRemove].Content.Length > 50
+                            ? messages[indexToRemove].Content.Substring(0, 50) + "..."
+                            : messages[indexToRemove].Content);
+
+                    messages.RemoveAt(indexToRemove);
+                }
+
+                _logger.LogInformation("✂️ Trimming complete. Final context size = {Chars} chars",
+                    messages.Sum(m => m.Content.Length));
+            }
+
+            _logger.LogInformation("Preparing to send messages to AI: {Messages}",
+    System.Text.Json.JsonSerializer.Serialize(messages));
             // Call AI service
             var aiResponse = await _aiChatService.GetReplyAsync(messages);
+
+            _logger.LogInformation("response recived");
 
             _logger.LogInformation("🤖 AI responded with: {ResponsePreview}",
                 aiResponse.Length > 50 ? aiResponse.Substring(0, 50) + "..." : aiResponse);
@@ -114,9 +169,10 @@ namespace Application.Services
                 RootChatId = rootChatId,
                 ParentChatId = chatCreateDto.ParentChatId,
                 Response = aiResponse,
-                ContextHealth = 100,
+                ContextHealth = usedContextWindowPercentage,
                 Createdby = null,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                ChatModelId = testModelId,
             };
 
             _logger.LogInformation("💾 Saving chat to database. ChatId={Id}, RootChatId={Root}", newChatId, rootChatId);

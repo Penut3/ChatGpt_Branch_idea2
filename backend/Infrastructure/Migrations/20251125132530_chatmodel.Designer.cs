@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20251125132530_chatmodel")]
+    partial class chatmodel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,9 +28,6 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ChatModelId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("ChatTitle")
@@ -60,8 +60,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ChatModelId");
 
                     b.HasIndex("ParentChatId");
 
@@ -118,16 +116,10 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Chat", b =>
                 {
-                    b.HasOne("Domain.Entities.ChatModel", "ChatModel")
-                        .WithMany()
-                        .HasForeignKey("ChatModelId");
-
                     b.HasOne("Domain.Entities.Chat", "ParentChat")
                         .WithMany("ChildChats")
                         .HasForeignKey("ParentChatId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ChatModel");
 
                     b.Navigation("ParentChat");
                 });
