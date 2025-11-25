@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
 import ChatWindow from "../components/ChatWindow";
 import BranchSidebar from "../components/BranchSidebar";
+import BranchGrid from "../components/BranchGrid";
+
+
 
 export default function HomePage() {
   const [chatHeaders, setChatHeaders] = useState([]);      // sidebar items
@@ -10,6 +13,7 @@ export default function HomePage() {
   const [loadingHeaders, setLoadingHeaders] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [viewMode, setViewMode] = useState("chat"); 
   
   
   const [showBranches, setShowBranches] = useState(false);
@@ -210,11 +214,15 @@ const handleSelectBranch = (index, branch) => {
         {/* SIDEBAR SWITCHING */}
     {showBranches ? (
       <BranchSidebar
-        branches={branches}
-        onSelectBranch={handleSelectBranch}
-        loadingBranches={loadingBranches}
-        onBackToChats={() => setShowBranches(false)}
-      />
+          branches={branches}
+          onSelectBranch={handleSelectBranch}
+          loadingBranches={loadingBranches}
+          onBackToChats={() => {
+            setShowBranches(false);
+            setViewMode("chat"); // go back to normal chat view
+          }}
+          onShowGrid={() => setViewMode("grid")}  // 👈 this is called by the "new grid" button
+        />
     ) : (
       <SideBar
         chats={chatHeaders}
@@ -227,12 +235,17 @@ const handleSelectBranch = (index, branch) => {
       />
     )}
 
+ {viewMode === "chat" && (
+        <ChatWindow
+          history={history}
+          onSend={handleSend}
+          loading={isSending}
+        />
+      )}
 
-      <ChatWindow
-        history={history}
-        onSend={handleSend}
-        loading={isSending}
-      />
+      {viewMode === "grid" && (
+        <BranchGrid />   // pass props here if your BranchGrid needs them
+      )}
     </div>
   );
 }

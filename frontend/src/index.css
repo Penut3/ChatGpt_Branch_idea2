@@ -2,6 +2,10 @@
   --grey: rgba(199, 199, 199, 0.9);
 }
 
+body {
+  margin: 0px;
+}
+
 .font1{
   font-family: 'Courier New', Courier, monospace;
 }

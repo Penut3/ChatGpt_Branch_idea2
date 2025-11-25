@@ -1,12 +1,15 @@
+// BranchSidebar.jsx
 import React from "react";
 import { Button, List, ListItem, ListItemText } from "@mui/material";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
+import BranchGrid from "./BranchGrid";
 
 export default function BranchSidebar({
   branches,
   onSelectBranch,
   loadingBranches,
   onBackToChats,
+  onShowGrid,          // 👈 new prop
 }) {
   return (
     <div
@@ -18,16 +21,10 @@ export default function BranchSidebar({
         position: "fixed",
         height: "100%",
         zIndex: 10,
+        backgroundColor: "white", 
       }}
     >
-      <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-        <img src="/crab.png" style={{ height: "80px" }} alt="CrabGPT" />
-      </div>
-      <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-        <h1 className="font1" style={{ color: "red" }}>
-          CrabGPT
-        </h1>
-      </div>
+      {/* ...logo + title stuff... */}
 
       <Button
         variant="contained"
@@ -38,14 +35,13 @@ export default function BranchSidebar({
         regular Chats
       </Button>
 
-      
       <Button
         variant="contained"
         fullWidth
-        onClick={onSelectBranch}
+        onClick={onShowGrid}  // 👈 use the new callback here
         style={{ backgroundColor: "grey", marginBottom: "10px" }}
       >
-        new grid<AltRouteIcon style={{ transform: "rotate(90deg)" }} />
+        new grid <AltRouteIcon style={{ transform: "rotate(90deg)" }} />
       </Button>
 
       {loadingBranches && <p>Loading branches...</p>}
