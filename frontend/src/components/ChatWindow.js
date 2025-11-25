@@ -4,6 +4,7 @@ import { Button } from "@mui/material";
 import ReactMarkdown from "react-markdown";
 import CircularProgress from "@mui/material/CircularProgress";
 import TurnLeftIcon from '@mui/icons-material/TurnLeft';
+import Tooltip from "@mui/material/Tooltip";
 
 export default function ChatWindow({ history, onSend, loading, onBranchFromMessage }) {
   const [input, setInput] = useState("");
@@ -73,6 +74,7 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
     item.response &&
     !item.isPending &&
     index !== history.length - 1 && (
+      <Tooltip title="Branch from this message">
       <Button
         size="small"
         variant="outlined"
@@ -96,6 +98,7 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
       >
         <TurnLeftIcon style={{ transform: "rotate(180deg)", fontSize:'25px'}}/>
       </Button>
+      </Tooltip>
     )}
             </div>
           ))
