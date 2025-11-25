@@ -250,6 +250,21 @@ namespace Application.Services
             return headers;
         }
 
+        public async Task<IEnumerable<Chat>> GetRootChats()
+        {
+            return await _chatRepo
+                .GetQueryable()
+                .Where(c => c.ParentChatId == null)
+                .ToListAsync();
+        }
 
+        
+             public async Task<IEnumerable<Chat>> GetChatByRootId(Guid id)
+        {
+            return await _chatRepo
+                .GetQueryable()
+                .Where(c => c.RootChatId == id)
+                .ToListAsync();
+        }
     }
 }

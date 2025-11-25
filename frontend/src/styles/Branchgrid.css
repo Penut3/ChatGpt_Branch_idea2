@@ -1,33 +1,71 @@
-/* Fullscreen wrapper (you can change width/height as needed) */
-.grid-wrapper {
-  width: 100vw;
+/* Full right-side area (does NOT cover sidebar) */
+.branch-grid-wrapper {
+  width: 100%;
   height: 100vh;
-  overflow: hidden;
   position: relative;
-  background-color: #111;
+  overflow: hidden;
+  background-color: #0b0b0b;
 
-  /* Grid made from two linear-gradients */
+  /* subtle grid */
   background-image:
     linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-
-  /* Size of grid cells */
   background-size: 40px 40px;
 
-  /* Smooth dragging feel */
   user-select: none;
 }
 
-/* Example item that stays “locked” to the grid coordinates */
-.grid-item {
+/* World that we translate around when panning */
+.branch-grid-world {
+  position: relative;
+  width: 4000px;  /* just a big canvas; adjust if you like */
+  height: 4000px;
+}
+
+/* SVG sits behind the nodes */
+.branch-grid-svg {
   position: absolute;
-  top: 100px; /* starting position on the grid */
-  left: 100px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.75);
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+/* Nodes = chats */
+.branch-node {
+  position: absolute;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.85);
   color: #fff;
-  font-family: system-ui, sans-serif;
-  font-size: 14px;
-  pointer-events: none; /* so dragging works even when mouse over this */
+  padding: 8px 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  text-align: left;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.branch-node:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+.branch-node-title {
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.branch-node-meta {
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* Lines between parent and child */
+.branch-grid-edge {
+  stroke: rgba(255, 255, 255, 0.4);
+  stroke-width: 2;
 }

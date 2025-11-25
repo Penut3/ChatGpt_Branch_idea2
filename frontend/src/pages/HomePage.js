@@ -15,7 +15,7 @@ export default function HomePage() {
   const [isSending, setIsSending] = useState(false);
   const [viewMode, setViewMode] = useState("chat"); 
   
-  
+  const [branchChats, setBranchChats] = useState([]);
   const [showBranches, setShowBranches] = useState(false);
   const [branches, setBranches] = useState([]); // you can fill this later
   const [loadingBranches, setLoadingBranches] = useState(false);
@@ -76,6 +76,40 @@ const BACKEND_URL = "https://localhost:7151/api/";
     }
   };
 
+  const loadRootBranches = async () => {
+  try {
+    setLoadingBranches(true);
+    const res = await fetch(`${BACKEND_URL}chat/RootChats`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const roots = await res.json();
+    setBranches(roots);   // 👈 branches = root chats
+  } catch (err) {
+    console.error("Error loading root branches:", err);
+  } finally {
+    setLoadingBranches(false);
+  }
+};
+
+const loadBranchTree = async (rootId) => {
+  try {
+    const res = await fetch(`${BACKEND_URL}chat/ByRoot/${rootId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const branch = await res.json(); 
+    // branch = array of chats in that root tree
+    setHistory(branch); // or setBranchChats(branch)
+    return branch;
+  } catch (err) {
+    console.error("Error loading branch tree:", err);
+  }
+};
+
+
   // When user clicks a chat in the sidebar
   const handleSelectChat = async (idx) => {
     setSelectedIdx(idx);
@@ -85,6 +119,26 @@ const BACKEND_URL = "https://localhost:7151/api/";
     // We assume header.id is the root chat or at least some chat in the chain
     await loadChatChain(header.id);
   };
+
+  // inside HomePage component
+
+
+
+// select chat based on id from grid node
+const handleSelectChatFromGrid = (chat) => {
+  // find index in chatHeaders so sidebar selection stays in sync
+  const idx = chatHeaders.findIndex((h) => h.id === chat.id);
+  if (idx !== -1) {
+    setSelectedIdx(idx);
+  }
+  // load that chain
+  loadChatChain(chat.id);
+  // optionally jump back to chat view:
+  setViewMode("chat");
+};
+
+
+
 
   // Start a brand new chat (not yet in sidebar)
   const createNewChat = () => {
@@ -199,30 +253,30 @@ const handleSend = async (prompt) => {
   }
 };
 
+const handleSelectBranch = async (index, branchRoot) => {
+  console.log("Selected root branch:", branchRoot);
 
-const handleSelectBranch = (index, branch) => {
-  console.log("Selected branch:", index, branch);
-  // TODO: load a branch chat when you define what a branch is
+  const tree = await loadBranchTree(branchRoot.id);
+
+  setBranchChats(tree);     // these go into BranchGrid
+  setViewMode("grid");      // switch to grid view
 };
 
-
-  return (
-    <div className="viewport" style={{ display: "flex" }}>
-     
-
-
-        {/* SIDEBAR SWITCHING */}
+return (
+  <div className="viewport" style={{ display: "flex" }}>
+    {/* LEFT: same as before */}
     {showBranches ? (
-      <BranchSidebar
-          branches={branches}
-          onSelectBranch={handleSelectBranch}
-          loadingBranches={loadingBranches}
-          onBackToChats={() => {
-            setShowBranches(false);
-            setViewMode("chat"); // go back to normal chat view
-          }}
-          onShowGrid={() => setViewMode("grid")}  // 👈 this is called by the "new grid" button
-        />
+     <BranchSidebar
+  branches={branches}
+  onSelectBranch={handleSelectBranch}
+  loadingBranches={loadingBranches}
+  onBackToChats={() => {
+    setShowBranches(false);
+    setViewMode("chat");
+  }}
+  onShowGrid={() => setViewMode("grid")}
+/>
+
     ) : (
       <SideBar
         chats={chatHeaders}
@@ -231,11 +285,16 @@ const handleSelectBranch = (index, branch) => {
         onNewChat={createNewChat}
         onDeleteChat={deleteChat}
         loading={loadingHeaders}
-        onShowBranches={() => setShowBranches(true)}
+         onShowBranches={() => {
+      setShowBranches(true);
+      loadRootBranches();       // ✅ load roots when entering branch mode
+    }}
       />
     )}
 
- {viewMode === "chat" && (
+    {/* RIGHT SIDE */}
+   
+      {viewMode === "chat" && (
         <ChatWindow
           history={history}
           onSend={handleSend}
@@ -243,9 +302,15 @@ const handleSelectBranch = (index, branch) => {
         />
       )}
 
-      {viewMode === "grid" && (
-        <BranchGrid />   // pass props here if your BranchGrid needs them
-      )}
-    </div>
-  );
+     {viewMode === "grid" && (
+  <BranchGrid
+    chats={branchChats}              // only this root's tree
+    onSelectChat={handleSelectChatFromGrid}
+  />
+)}
+
+    
+  </div>
+);
+
 }

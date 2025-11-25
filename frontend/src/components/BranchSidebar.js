@@ -2,14 +2,13 @@
 import React from "react";
 import { Button, List, ListItem, ListItemText } from "@mui/material";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
-import BranchGrid from "./BranchGrid";
 
 export default function BranchSidebar({
   branches,
   onSelectBranch,
   loadingBranches,
   onBackToChats,
-  onShowGrid,          // 👈 new prop
+  onShowGrid, // called when "new grid" is clicked
 }) {
   return (
     <div
@@ -21,10 +20,10 @@ export default function BranchSidebar({
         position: "fixed",
         height: "100%",
         zIndex: 10,
-        backgroundColor: "white", 
+        backgroundColor: "white",
       }}
     >
-      {/* ...logo + title stuff... */}
+      {/* You can keep your logo/title here if you had them before */}
 
       <Button
         variant="contained"
@@ -38,7 +37,7 @@ export default function BranchSidebar({
       <Button
         variant="contained"
         fullWidth
-        onClick={onShowGrid}  // 👈 use the new callback here
+        onClick={onShowGrid}
         style={{ backgroundColor: "grey", marginBottom: "10px" }}
       >
         new grid <AltRouteIcon style={{ transform: "rotate(90deg)" }} />
@@ -57,7 +56,8 @@ export default function BranchSidebar({
             key={branch.id || i}
             onClick={() => onSelectBranch && onSelectBranch(i, branch)}
           >
-            <ListItemText primary={branch.title || `Branch ${i + 1}`} />
+            <ListItemText primary={branch.chatTitle || `Root ${i + 1}`} />
+
           </ListItem>
         ))}
       </List>

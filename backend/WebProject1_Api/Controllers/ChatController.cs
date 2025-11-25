@@ -51,5 +51,21 @@ namespace API.Controllers
             var res = await _chatService.GetChatHeader();
             return Ok(res);
         }
+
+        [HttpGet("RootChats")]
+        public async Task<IActionResult> GetRootChats()
+        {
+            var res = await _chatService.GetRootChats();
+            return Ok(res);
+        }
+
+        [HttpGet("ByRoot/{id:Guid}")]
+        public async Task<IActionResult> GetChatByRootId(Guid id)
+        {
+            var res = await _chatService.GetChatByRootId(id);
+            return Ok(res);
+        }
+
+
     }
 }
