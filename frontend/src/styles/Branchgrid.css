@@ -63,12 +63,17 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  max-width: 150px;
 }
 
 .branch-node-meta {
   margin-top: 4px;
   font-size: 11px;
   opacity: 0.7;
+   max-width: 150px;
+    white-space: nowrap;
+   text-overflow: ellipsis;
+   overflow: hidden;
 }
 
 /* Lines between parent and child */

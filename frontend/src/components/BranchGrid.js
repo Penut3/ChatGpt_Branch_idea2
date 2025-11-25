@@ -207,16 +207,19 @@ export default function BranchGrid({ chats, onSelectChat }) {
             }}
             onClick={() => onSelectChat && onSelectChat(node.chat)}
           >
-            <div className="branch-node-title">
+             <div className="branch-node-title">
+              {node.chat.userRequest || "(no title)"}
+            </div>
+            <div className="branch-node-meta" style={{}}>
               {node.title || "(no title)"}
             </div>
             <div className="branch-node-meta">
               {new Date(node.chat.createdAt).toLocaleString()}
             </div>
-             <div className="branch-hover-icon" style={{position:"absolute", display:"flex", width:"100%", alignItems:"center", right: "20px", justifyContent:"right", top:"22px"}}><AddIcon/></div>
+             <div className="branch-hover-icon" style={{position:"absolute", display:"flex", width:"100%", alignItems:"center", right: "20px", justifyContent:"right", top:"22px"}}>
+                <AddIcon/>
+                </div>
           </button>
-
-           
             </>
         ))}
       </div>
