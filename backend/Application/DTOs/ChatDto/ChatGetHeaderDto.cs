@@ -14,6 +14,8 @@ namespace Application.DTOs.ChatDto
         public Guid? RootChatId { get; set; }
         public int? ContextHealth { get; set; }
 
+        public string UserRequest { get; set; }
+
         public DateTime CreatedAt { get; set; }
     }
 }

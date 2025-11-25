@@ -77,11 +77,13 @@ export default function SideBar({
             onMouseLeave={() => setHoveredIdx(null)}
           >
             <ListItemText
-              primary={chat.chatTitle || "Untitled chat"}
+              primary={ chat.userRequest}
               secondary={
-                chat.createdAt
-                  ? new Date(chat.createdAt).toLocaleString()
-                  : null
+                // chat.createdAt
+                //   ? new Date(chat.createdAt).toLocaleString()
+                //   : null
+                chat.chatTitle || "Untitled chat"
+               
               }
             />
             {hoveredIdx === i && (

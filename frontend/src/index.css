@@ -2,6 +2,10 @@
   --grey: rgba(199, 199, 199, 0.9);
 }
 
+body {
+  margin: 0px;
+}
+
 .font1{
   font-family: 'Courier New', Courier, monospace;
 }
@@ -24,7 +28,8 @@
 }
 
 .output-section{
-  width: 700px;
+  --output-width: 700px;
+  width: var(--output-width);
   height: 100%;
  
   padding-top: 100px;

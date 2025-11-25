@@ -1,3 +1,4 @@
+// BranchSidebar.jsx
 import React from "react";
 import { Button, List, ListItem, ListItemText } from "@mui/material";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
@@ -7,6 +8,7 @@ export default function BranchSidebar({
   onSelectBranch,
   loadingBranches,
   onBackToChats,
+  onShowGrid, // called when "new grid" is clicked
 }) {
   return (
     <div
@@ -18,16 +20,10 @@ export default function BranchSidebar({
         position: "fixed",
         height: "100%",
         zIndex: 10,
+        backgroundColor: "white",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-        <img src="/crab.png" style={{ height: "80px" }} alt="CrabGPT" />
-      </div>
-      <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-        <h1 className="font1" style={{ color: "red" }}>
-          CrabGPT
-        </h1>
-      </div>
+      {/* You can keep your logo/title here if you had them before */}
 
       <Button
         variant="contained"
@@ -38,14 +34,13 @@ export default function BranchSidebar({
         regular Chats
       </Button>
 
-      
       <Button
         variant="contained"
         fullWidth
-        onClick={onSelectBranch}
+        onClick={onShowGrid}
         style={{ backgroundColor: "grey", marginBottom: "10px" }}
       >
-        new grid<AltRouteIcon style={{ transform: "rotate(90deg)" }} />
+        new grid <AltRouteIcon style={{ transform: "rotate(90deg)" }} />
       </Button>
 
       {loadingBranches && <p>Loading branches...</p>}
@@ -61,7 +56,8 @@ export default function BranchSidebar({
             key={branch.id || i}
             onClick={() => onSelectBranch && onSelectBranch(i, branch)}
           >
-            <ListItemText primary={branch.title || `Branch ${i + 1}`} />
+            <ListItemText primary={branch.chatTitle || `Root ${i + 1}`} />
+
           </ListItem>
         ))}
       </List>
