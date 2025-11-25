@@ -19,6 +19,7 @@ export default function BranchGrid({ chats, onSelectChat }) {
     setIsDragging(true);
     lastPosRef.current = { x: e.clientX, y: e.clientY };
   };
+  
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -42,7 +43,7 @@ export default function BranchGrid({ chats, onSelectChat }) {
   }, [isDragging]);
 
   // --- BUILD TREE + LAYOUT POSITIONS ---
-  const { nodes, edges } = useMemo(() => {
+    const { nodes, edges } = useMemo(() => {
     if (!chats || chats.length === 0) {
       return { nodes: [], edges: [] };
     }
@@ -53,30 +54,27 @@ export default function BranchGrid({ chats, onSelectChat }) {
       map.set(c.id, { chat: c, children: [] });
     });
 
-    // Link children
-    const roots = [];
+    // Link children, find root (there should be only one for this grid)
+    let root = null;
     chats.forEach((c) => {
       if (c.parentChatId && map.has(c.parentChatId)) {
         map.get(c.parentChatId).children.push(map.get(c.id));
       } else {
         // no parent => root
-        roots.push(map.get(c.id));
+        if (!root) root = map.get(c.id);
       }
     });
 
-    // Sort roots by createdAt to have stable order
-    roots.sort(
-      (a, b) =>
-        new Date(a.chat.createdAt).getTime() -
-        new Date(b.chat.createdAt).getTime()
-    );
+    if (!root) {
+      // fallback: just pick the first chat
+      root = map.get(chats[0].id);
+    }
 
     const positionedNodes = [];
     const edges = [];
-    let currentRow = 0;
+    let branchRowCounter = 1; // 0 = main line, 1+ = branches
 
-    const dfs = (node, depth) => {
-      const row = currentRow++;
+    const placeNode = (node, depth, row) => {
       const x = depth * COLUMN_WIDTH;
       const y = row * ROW_HEIGHT;
 
@@ -87,27 +85,50 @@ export default function BranchGrid({ chats, onSelectChat }) {
         y,
         chat: node.chat,
       });
-
-      node.children
-        .sort(
-          (a, b) =>
-            new Date(a.chat.createdAt).getTime() -
-            new Date(b.chat.createdAt).getTime()
-        )
-        .forEach((child) => {
-          edges.push({
-            from: node.chat.id,
-            to: child.chat.id,
-          });
-          dfs(child, depth + 1);
-        });
     };
 
-    roots.forEach((root) => {
-      dfs(root, 0);
-      // small gap between separate trees
-      currentRow += 1;
-    });
+    const sortByCreated = (a, b) =>
+      new Date(a.chat.createdAt).getTime() - new Date(b.chat.createdAt).getTime();
+
+    // Main branch: always stays on row 0
+    const layoutMain = (node, depth) => {
+      placeNode(node, depth, 0);
+
+      const children = [...node.children].sort(sortByCreated);
+      if (children.length === 0) return;
+
+      const mainChild = children[0]; // oldest = main continuation
+      edges.push({ from: node.chat.id, to: mainChild.chat.id });
+      layoutMain(mainChild, depth + 1);
+
+      const branchChildren = children.slice(1);
+      branchChildren.forEach((child) => {
+        const row = branchRowCounter++;
+        edges.push({ from: node.chat.id, to: child.chat.id });
+        layoutBranch(child, depth + 1, row);
+      });
+    };
+
+    // Branch layout: each branch has its own row
+    const layoutBranch = (node, depth, row) => {
+      placeNode(node, depth, row);
+
+      const children = [...node.children].sort(sortByCreated);
+      if (children.length === 0) return;
+
+      const mainChild = children[0];
+      edges.push({ from: node.chat.id, to: mainChild.chat.id });
+      layoutBranch(mainChild, depth + 1, row); // continue on same row
+
+      const branchChildren = children.slice(1);
+      branchChildren.forEach((child) => {
+        const newRow = branchRowCounter++;
+        edges.push({ from: node.chat.id, to: child.chat.id });
+        layoutBranch(child, depth + 1, newRow);
+      });
+    };
+
+    layoutMain(root, 0);
 
     return { nodes: positionedNodes, edges };
   }, [chats]);
