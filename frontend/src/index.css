@@ -28,7 +28,8 @@ body {
 }
 
 .output-section{
-  width: 700px;
+  --output-width: 700px;
+  width: var(--output-width);
   height: 100%;
  
   padding-top: 100px;
