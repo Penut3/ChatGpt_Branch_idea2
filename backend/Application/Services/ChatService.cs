@@ -84,8 +84,8 @@ namespace Application.Services
                 aiResponse.Length > 50 ? aiResponse.Substring(0, 50) + "..." : aiResponse);
 
             // Create a title
-            string chatTitle = aiResponse.Length > 20
-                ? aiResponse.Substring(0, 20)
+            string chatTitle = aiResponse.Length > 35
+                ? aiResponse.Substring(0, 35)
                 : aiResponse;
 
             _logger.LogInformation("🏷 Generated chat title: {ChatTitle}", chatTitle);
@@ -214,7 +214,10 @@ namespace Application.Services
                 CreatedAt = chat.CreatedAt,
                 ParentChatId = chat.ParentChatId,
                 RootChatId = chat.RootChatId,
-                ContextHealth = chat.ContextHealth
+                ContextHealth = chat.ContextHealth,
+                UserRequest = chat.UserRequest.Length > 50
+                ? chat.UserRequest.Substring(0, 50)
+                : chat.UserRequest,
             });
         }
 
@@ -243,7 +246,10 @@ namespace Application.Services
                     CreatedAt = chat.CreatedAt,
                     ParentChatId = chat.ParentChatId,
                     RootChatId = chat.RootChatId,
-                    ContextHealth = chat.ContextHealth
+                    ContextHealth = chat.ContextHealth,
+                    UserRequest = chat.UserRequest.Length > 50
+                    ? chat.UserRequest.Substring(0, 50)
+                    : chat.UserRequest,
                 })
                 .OrderByDescending(h => h.CreatedAt); // optional
 
