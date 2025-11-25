@@ -1,6 +1,7 @@
 // BranchGrid.jsx
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import "../styles/Branchgrid.css";
+import AddIcon from '@mui/icons-material/Add';
 
 const COLUMN_WIDTH = 260; // distance between levels (x)
 const ROW_HEIGHT = 100;   // distance between rows (y)
@@ -194,6 +195,7 @@ export default function BranchGrid({ chats, onSelectChat }) {
 
         {/* Nodes */}
         {nodes.map((node) => (
+            <>
           <button
             key={node.id}
             className="branch-node"
@@ -211,7 +213,11 @@ export default function BranchGrid({ chats, onSelectChat }) {
             <div className="branch-node-meta">
               {new Date(node.chat.createdAt).toLocaleString()}
             </div>
+             <div className="branch-hover-icon" style={{position:"absolute", display:"flex", width:"100%", alignItems:"center", right: "20px", justifyContent:"right", top:"22px"}}><AddIcon/></div>
           </button>
+
+           
+            </>
         ))}
       </div>
     </div>

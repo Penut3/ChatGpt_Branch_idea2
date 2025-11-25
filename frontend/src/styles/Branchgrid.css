@@ -51,6 +51,13 @@
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
 }
 
+.branch-node:hover .branch-hover-icon {
+  opacity: 1;
+}
+
+.branch-hover-icon{
+    opacity: 0;
+}
 .branch-node-title {
   font-weight: 600;
   white-space: nowrap;

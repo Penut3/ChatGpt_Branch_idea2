@@ -66,6 +66,11 @@ namespace API.Controllers
             return Ok(res);
         }
 
-
+        [HttpGet("ChatChildren/{id:Guid}")]
+        public async Task<IActionResult> GetChatChildren(Guid id) // Will get children of a chat by id and stop when you reach leaves(then only giving the leaves headers)
+        {
+            var res = await _chatService.GetChatByRootId(id);
+            return Ok(res);
+        }
     }
 }

@@ -30,7 +30,7 @@ export default function HomePage() {
       });
 
       const data = await res.json();
-      // data: { id, chatTitle, createdAt, parentChatId, rootChatId, contextHealth }[]
+      // data: { id, chatTitle, createdAt, parentChatId, rootChatId, contextHealth, userRequest  }[]
       setChatHeaders(data);
     } catch (err) {
       console.error("Error loading chats:", err);
