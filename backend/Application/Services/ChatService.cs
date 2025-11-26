@@ -33,7 +33,8 @@ namespace Application.Services
 
             var messages = new List<AiMessage>
     {
-        //new AiMessage { Role = AiMessageRole.System, Content = "You are a helpful assistant." }
+        new AiMessage { Role = AiMessageRole.System, Content = "You are a helpful assistant." + "When you include code, use fenced code blocks with language tags " +
+        "like ```python or ```csharp."}
     };
 
             _logger.LogInformation("🧱 Added system prompt message.");
