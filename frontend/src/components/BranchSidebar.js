@@ -14,17 +14,25 @@ export default function BranchSidebar({
     <div
       className="sidebar"
       style={{
-        width: 230,
+        width: 350,
         borderRight: "1px solid #ccc",
         padding: "10px",
         position: "fixed",
         height: "100%",
         zIndex: 10,
         backgroundColor: "white",
+         overflowY: "auto",
       }}
     >
       {/* You can keep your logo/title here if you had them before */}
-
+<div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+        <img src="/crab.png" style={{ height: "80px" }} alt="CrabGPT" />
+      </div>
+      <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+        <h1 className="font1" style={{ color: "red" }}>
+          CrabGPT
+        </h1>
+      </div>
       <Button
         variant="contained"
         fullWidth

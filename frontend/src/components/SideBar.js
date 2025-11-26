@@ -21,17 +21,18 @@ export default function SideBar({
   const [hoveredIdx, setHoveredIdx] = React.useState(null);
 
   return (
-    <div
-      className="sidebar"
-      style={{
-        width: 230,
-        borderRight: "1px solid #ccc",
-        padding: "10px",
-        position: "fixed",
-        height: "100%",
-        zIndex: 10,
-      }}
-    >
+   <div
+  className="sidebar"
+  style={{
+    width: 350,
+    borderRight: "1px solid #ccc",
+    padding: "10px",
+    position: "fixed",
+    height: "100%",
+    zIndex: 10,
+    overflowY: "auto",   // ← ADD THIS
+  }}
+>
       <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
         <img src="/crab.png" style={{ height: "80px" }} alt="CrabGPT" />
       </div>

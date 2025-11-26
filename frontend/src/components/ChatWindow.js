@@ -120,7 +120,7 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
   }, [history]);
 
   return (
-    <div className="ai-section" style={{ marginLeft: 230, width: "100%" }}>
+    <div className="ai-section" style={{ marginLeft: 300, width: "100%" }}>
       <div className="output-section">
         {history.length === 0 ? (
           <p>Empty chat</p>
