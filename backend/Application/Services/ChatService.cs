@@ -169,7 +169,7 @@ namespace Application.Services
                 RootChatId = rootChatId,
                 ParentChatId = chatCreateDto.ParentChatId,
                 Response = aiResponse,
-                ContextHealth = usedContextWindowPercentage,
+                ContextUsed = usedContextWindowPercentage,
                 Createdby = null,
                 CreatedAt = DateTime.UtcNow,
                 ChatModelId = testModelId,
@@ -245,7 +245,7 @@ namespace Application.Services
                     CreatedAt = chat.CreatedAt,
                     ParentChatId = chat.ParentChatId,
                     RootChatId = chat.RootChatId,
-                    ContextHealth = chat.ContextHealth
+                    ContextUsed = chat.ContextUsed
                 };
 
                 list.Add(currentDtoObject);
@@ -270,7 +270,7 @@ namespace Application.Services
                 CreatedAt = chat.CreatedAt,
                 ParentChatId = chat.ParentChatId,
                 RootChatId = chat.RootChatId,
-                ContextHealth = chat.ContextHealth,
+                ContextUsed = chat.ContextUsed,
                 UserRequest = chat.UserRequest.Length > 50
                 ? chat.UserRequest.Substring(0, 50)
                 : chat.UserRequest,
@@ -302,7 +302,7 @@ namespace Application.Services
                     CreatedAt = chat.CreatedAt,
                     ParentChatId = chat.ParentChatId,
                     RootChatId = chat.RootChatId,
-                    ContextHealth = chat.ContextHealth,
+                    ContextUsed = chat.ContextUsed,
                     UserRequest = chat.UserRequest.Length > 50
                     ? chat.UserRequest.Substring(0, 50)
                     : chat.UserRequest,
