@@ -203,7 +203,8 @@ export default function BranchGrid({ chats, onSelectChat }) {
   const remaining = 100 - clampedUsed;
 
  let barColor = "#4caf50"; // green
-  if (remaining < 30) barColor = "#f44336"; // red
+  if (remaining < 30) {barColor = "#f44336";
+   } else if (remaining < 50) barColor = "#f3a42fff"; // red
 
   let statusMessage = "";
   if (remaining >= 50) {
