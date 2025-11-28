@@ -72,5 +72,13 @@ namespace API.Controllers
             var res = await _chatService.GetChatByRootId(id);
             return Ok(res);
         }
+
+
+        [HttpGet("grid/{id:Guid}")]
+        public async Task<IActionResult> GetChatsByGridId(Guid id)
+        {
+            var res = await _chatService.GetChatsByGridId(id);
+            return Ok(res);
+        }
     }
 }

@@ -172,6 +172,7 @@ namespace Application.Services
                 UserRequest = chatCreateDto.UserRequest,
                 RootChatId = rootChatId,
                 ParentChatId = chatCreateDto.ParentChatId,
+                GridId = chatCreateDto.GridId,
                 Response = aiResponse,
                 ContextUsed = usedContextWindowPercentage,
                 Createdby = null,
@@ -332,5 +333,13 @@ namespace Application.Services
                 .Where(c => c.RootChatId == id)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Chat>> GetChatsByGridId(Guid gridId)
+        {
+            return await _chatRepo.GetQueryable()
+                .Where(c => c.GridId == gridId)
+                .ToListAsync();
+        }
+
     }
 }

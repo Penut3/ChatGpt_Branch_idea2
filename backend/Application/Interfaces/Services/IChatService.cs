@@ -20,5 +20,6 @@ namespace Application.Interfaces.Services
         Task<IEnumerable<Chat>> GetRootChats();
 
         Task<IEnumerable<Chat>> GetChatByRootId(Guid id);
+        Task<IEnumerable<Chat>> GetChatsByGridId(Guid gridId);
     }
 }
