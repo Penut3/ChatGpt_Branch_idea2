@@ -149,6 +149,7 @@ export default function BranchGrid({ chats, onSelectChat }) {
     (Math.max(0, ...nodes.map((n) => n.y)) || 0) + ROW_HEIGHT + 200;
 
   return (
+    <>
     <div
       className="branch-grid-wrapper"
       onMouseDown={handleMouseDown}
@@ -194,35 +195,102 @@ export default function BranchGrid({ chats, onSelectChat }) {
         </svg>
 
         {/* Nodes */}
-        {nodes.map((node) => (
-            <>
-          <button
-            key={node.id}
-            className="branch-node"
-            style={{
-              left: node.x,
-              top: node.y,
-              width: NODE_WIDTH,
-              height: NODE_HEIGHT,
-            }}
-            onClick={() => onSelectChat && onSelectChat(node.chat)}
-          >
-             <div className="branch-node-title">
-              {node.chat.userRequest || "(no title)"}
-            </div>
-            <div className="branch-node-meta" style={{}}>
-              {node.title || "(no title)"}
-            </div>
-            <div className="branch-node-meta">
-              {new Date(node.chat.createdAt).toLocaleString()}
-            </div>
-             <div className="branch-hover-icon" style={{position:"absolute", display:"flex", width:"100%", alignItems:"center", right: "20px", justifyContent:"right", top:"22px"}}>
-                <AddIcon/>
-                </div>
-          </button>
-            </>
-        ))}
+       {nodes.map((node) => {
+  // --- Context / healthbar values (used both in bar + tooltip) ---
+  const used =
+    typeof node.chat.contextUsed === "number" ? node.chat.contextUsed : 0;
+  const clampedUsed = Math.min(100, Math.max(0, used));
+  const remaining = 100 - clampedUsed;
+
+ let barColor = "#4caf50"; // green
+  if (remaining < 30) {barColor = "#f44336";
+   } else if (remaining < 50) barColor = "#f3a42fff"; // red
+
+  let statusMessage = "";
+  if (remaining >= 50) {
+    statusMessage = "Healthy: Accurate responses";
+  } else if (remaining >= 30) {
+    statusMessage = "Consider new Chat";
+  } else if (remaining >= 15) {
+    statusMessage = "UnHealthy: Turnication will be";
+  } else {
+    statusMessage = "Critical context level! Summarize or start a new branch.";
+  }
+
+    const contextTooltip =
+    `${statusMessage}\n` +
+    `ContextHealth: ${remaining}%`;
+    
+  return (
+    <button
+      key={node.id}
+      className="branch-node"
+      title={contextTooltip}
+      style={{
+        left: node.x,
+        top: node.y,
+        width: NODE_WIDTH,
+        height: NODE_HEIGHT,
+      }}
+      onClick={() => onSelectChat && onSelectChat(node.chat)}
+    >
+      <div className="branch-node-title">
+        {node.chat.userRequest || "(no title)"}
+      </div>
+      <div className="branch-node-meta">
+        {node.title || "(no title)"}
+      </div>
+
+       <div className="branch-node-meta" style={{fontSize:'8px'}}>
+          {new Date(node.chat.createdAt).toLocaleString()}
+        </div>
+
+      {/* Context health bar */}
+      <div
+        className="branch-node-healthbar-container"
+        style={{
+          position: "absolute",
+          left: 10,
+          right: 10,
+          bottom: 0,
+          height: 2,
+          borderRadius: 4,
+          backgroundColor: "#e0e0e0",
+          overflow: "hidden",
+          zIndex: 100,
+        }}
+      >
+        <div
+          style={{
+            width: `${remaining}%`,
+            height: "100%",
+            backgroundColor: barColor,
+            transition: "width 0.3s ease",
+            padding: "20px"
+          }}
+        />
+      </div>
+
+      <div
+        className="branch-hover-icon"
+        style={{
+          position: "absolute",
+          display: "flex",
+          width: "100%",
+          alignItems: "center",
+          right: "20px",
+          justifyContent: "right",
+          top: "22px",
+        }}
+      >
+        <AddIcon />
+      </div>
+    </button>
+  );
+})}
+
       </div>
     </div>
+    </>
   );
 }

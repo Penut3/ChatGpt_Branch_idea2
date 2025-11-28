@@ -29,7 +29,6 @@ namespace Application.Services
         
        public async Task<Chat> CreateChat(ChatCreateDto chatCreateDto)
         {
-            _logger.LogInformation("➡️ CreateChat started. ParentChatId={ParentChatId}", chatCreateDto.ParentChatId);
 
             var messages = new List<AiMessage>
     {
@@ -59,7 +58,6 @@ namespace Application.Services
 
                     if (!string.IsNullOrWhiteSpace(chat.Response))
                     {
-                        _logger.LogInformation("📤 Adding past Assistant response.");
                         messages.Add(new AiMessage
                         {
                             Role = AiMessageRole.Assistant,
@@ -84,9 +82,9 @@ namespace Application.Services
             var testModelId = Guid.Parse("866993a1-ffda-4124-8d3e-b389ae3c06fc");
             var model = await _chatModelRepo.GetById(testModelId);
             var MaxContextWindowTokens = model.ContextWindowTokens;
-            var MaxContextWindowCharacters = MaxContextWindowTokens * 4; // Rough estimate: 1 token ~ 4 characters
+            var MaxContextWindowCharacters = MaxContextWindowTokens * 3; // Rough estimate: 1 token ~ 4 characters
 
-            _logger.LogInformation("MaxContextWindow Characters: ", MaxContextWindowCharacters);
+            _logger.LogInformation("MaxContextWindow Characters: {MaxContextWindowCharacters}", MaxContextWindowCharacters);
 
             //Calculate total precentage of context window used
             var usedContextWindowCharacters = messages.Sum(m => m.Content?.Length ?? 0);
@@ -105,29 +103,34 @@ namespace Application.Services
 
                 var totalChars = usedContextWindowCharacters;
 
-                while (totalChars > MaxContextWindowCharacters)
+                while (messages.Count > 2 && totalChars > MaxContextWindowCharacters)
                 {
-                    // remove oldest non-system message
-                    var indexToRemove = messages.FindIndex(m => m.Role != AiMessageRole.System);
+                    // Skip system message at index 0
+                    var firstUserMsg = messages.Skip(1).FirstOrDefault(m => m.Role == AiMessageRole.User);
 
-                    if (indexToRemove == -1)
-                    {
-                        _logger.LogWarning("🚫 Only system messages remain — cannot trim further.");
+                    if (firstUserMsg == null)
                         break;
+
+                    int idx = messages.IndexOf(firstUserMsg);
+
+                    // Remove user message
+                    totalChars -= messages[idx].Content.Length;
+                    messages.RemoveAt(idx);
+
+                    // Remove assistant message following it (if it exists)
+                    if (idx < messages.Count && messages[idx].Role == AiMessageRole.Assistant)
+                    {
+                        totalChars -= messages[idx].Content.Length;
+                        messages.RemoveAt(idx);
                     }
-
-                    _logger.LogWarning("🗑 Removing oldest message: {MsgType} '{Preview}'",
-                        messages[indexToRemove].Role,
-                        messages[indexToRemove].Content.Length > 50
-                            ? messages[indexToRemove].Content.Substring(0, 50) + "..."
-                            : messages[indexToRemove].Content);
-
-                    messages.RemoveAt(indexToRemove);
                 }
 
-                _logger.LogInformation("✂️ Trimming complete. Final context size = {Chars} chars",
-                    messages.Sum(m => m.Content.Length));
+
+                var finalSize = messages.Sum(m => m.Content?.Length ?? 0);
+
+                _logger.LogInformation("✂️ Trimming complete. Final context size = {Chars} chars", finalSize);
             }
+
 
             _logger.LogInformation("Preparing to send messages to AI: {Messages}",
     System.Text.Json.JsonSerializer.Serialize(messages));
