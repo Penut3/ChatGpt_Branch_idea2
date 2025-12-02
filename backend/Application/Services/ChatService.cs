@@ -338,6 +338,7 @@ namespace Application.Services
         {
             return await _chatRepo.GetQueryable()
                 .Where(c => c.GridId == gridId)
+                //.Where(c => c.ParentChatId == null)
                 .ToListAsync();
         }
 
