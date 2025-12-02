@@ -31,7 +31,7 @@ export default function HomePage() {
   const loadChats = async () => {
     try {
       setLoadingHeaders(true);
-      const res = await fetch(`${BACKEND_URL}chat/ChatHeaders/Latest`, {
+      const res = await fetch(`${BACKEND_URL}chat/ChatHeaders`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
