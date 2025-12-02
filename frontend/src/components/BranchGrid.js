@@ -2,13 +2,14 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import "../styles/Branchgrid.css";
 import AddIcon from '@mui/icons-material/Add';
+import { Button } from "@mui/material";
 
 const COLUMN_WIDTH = 260; // distance between levels (x)
 const ROW_HEIGHT = 100;   // distance between rows (y)
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
 
-export default function BranchGrid({ chats, onSelectChat }) {
+export default function BranchGrid({ chats, onSelectChat,  onNewRootChat }) {
   // --- DRAGGING / PANNING ---
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -171,6 +172,30 @@ const { nodes, edges } = useMemo(() => {
         cursor: isDragging ? "grabbing" : "grab",
       }}
     >
+
+            {/* New root chat button */}
+      {onNewRootChat && (
+        <Button
+          variant="contained"
+          size="small"
+          onMouseDown={(e) => e.stopPropagation()}   // 👈 prevent panning
+          onClick={(e) => {
+            e.stopPropagation();
+            onNewRootChat();
+          }}
+          style={{
+            position: "absolute",
+            padding: "10px",
+            top: 20,
+            left: 380,
+            zIndex: 2000,
+            backgroundColor: "#3b3b3b",
+          }}
+        >
+          New root chat
+        </Button>
+      )}
+
       {/* Inner world that moves with offset */}
       <div
         className="branch-grid-world"
@@ -235,6 +260,7 @@ const { nodes, edges } = useMemo(() => {
     `ContextHealth: ${remaining}%`;
     
   return (
+    <>
     <button
       key={node.id}
       className="branch-node"
@@ -299,11 +325,13 @@ const { nodes, edges } = useMemo(() => {
         <AddIcon />
       </div>
     </button>
+    </>
   );
 })}
 
       </div>
     </div>
     </>
+    
   );
 }

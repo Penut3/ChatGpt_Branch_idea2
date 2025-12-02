@@ -24,6 +24,7 @@ export default function HomePage() {
   const [grids, setGrids] = useState([]);          // list of grids in sidebar
   const [loadingGrids, setLoadingGrids] = useState(false);
   const [gridChats, setGridChats] = useState([]);  // chats belonging to selected grid
+  const [selectedGridId, setSelectedGridId] = useState(null);
 
   const BACKEND_URL = "https://localhost:7151/api/";
 
@@ -138,6 +139,8 @@ export default function HomePage() {
     }
   };
 
+
+
   // =====================
   // NEW: load a single grid (with chats) by id
   // =====================
@@ -226,89 +229,99 @@ export default function HomePage() {
     setViewMode("chat");
   };
 
-    const handleSelectGrid = async (index, grid) => {
-    console.log("Selected grid:", grid);
-    await loadGridById(grid.id);
+  const handleSelectGrid = async (index, grid) => {
+  console.log("Selected grid:", grid);
+  setSelectedGridId(grid.id);          // ✅ remember the grid
+  await loadGridById(grid.id);         // loads chats into BranchGrid
   };
 
-  // Send a new message
-  const handleSend = async (prompt) => {
-    if (!prompt.trim()) return;
-    setIsSending(true);
+const handleNewRootChat = () => {
+  // starting a totally new root chat in this grid
+  setHistory([]);
+  setSelectedIdx(null);
+  setViewMode("chat");
+};
 
-    // Use last message to know parentChatId
-    const lastMessage = history[history.length - 1];
-    const parentChatId = lastMessage ? lastMessage.chatId : null;
 
-    // 1) Optimistically add the user message with pending AI response
-    const tempMessage = {
-      prompt,
-      response: null,
-      chatId: null,
-      rootChatId: lastMessage ? lastMessage.rootChatId : null,
-      isPending: true,
-    };
+ const handleSend = async (prompt) => {
+  if (!prompt.trim()) return;
+  setIsSending(true);
 
-    setHistory((prev) => [...prev, tempMessage]);
+  const lastMessage = history[history.length - 1];
+  const parentChatId = lastMessage ? lastMessage.chatId : null;
 
-    // 2) Call backend
-    const body = {
-      userRequest: prompt,
-      parentChatId, // null => new root
-    };
+  // 🔹 Is this the first message in a new chat?
+  const isNewRootChat = !parentChatId;
 
-    try {
-      const res = await fetch(`${BACKEND_URL}chat/CreateChat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+  // 🔹 Only attach GridId when creating that *first* chat in a grid
+  const gridId = isNewRootChat && selectedGridId ? selectedGridId : null;
 
-      const created = await res.json();
-      const newRootId = created.rootChatId || created.id;
-      setIsSending(false);
-
-      // 3) Update the last pending message with real data from backend
-      setHistory((prev) => {
-        const copy = [...prev];
-        const idx = [...copy]
-          .reverse()
-          .findIndex((m) => m.isPending && m.prompt === prompt);
-
-        if (idx === -1) return copy;
-
-        const realIdx = copy.length - 1 - idx;
-
-        copy[realIdx] = {
-          prompt: created.userRequest,
-          response: created.response,
-          chatId: created.id,
-          rootChatId: newRootId,
-        };
-
-        return copy;
-      });
-
-      // 4) Refresh the headers list
-      await loadChats();
-    } catch (err) {
-      console.error("Error sending message:", err);
-
-      setHistory((prev) => {
-        const copy = [...prev];
-        const idx = copy.findIndex((m) => m.isPending && m.prompt === prompt);
-        if (idx === -1) return copy;
-
-        copy[idx] = {
-          ...copy[idx],
-          response: "Something went wrong sending this message.",
-          isPending: false,
-        };
-
-        return copy;
-      });
-    }
+  const tempMessage = {
+    prompt,
+    response: null,
+    chatId: null,
+    rootChatId: lastMessage ? lastMessage.rootChatId : null,
+    isPending: true,
   };
+
+  setHistory((prev) => [...prev, tempMessage]);
+
+  const body = {
+    userRequest: prompt,
+    parentChatId,   // null => new root chain
+    gridId,         // 👈 maps to C# GridId
+  };
+
+  try {
+    const res = await fetch(`${BACKEND_URL}chat/CreateChat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    const created = await res.json();
+    const newRootId = created.rootChatId || created.id;
+    setIsSending(false);
+
+    setHistory((prev) => {
+      const copy = [...prev];
+      const idx = [...copy]
+        .reverse()
+        .findIndex((m) => m.isPending && m.prompt === prompt);
+
+      if (idx === -1) return copy;
+
+      const realIdx = copy.length - 1 - idx;
+
+      copy[realIdx] = {
+        prompt: created.userRequest,
+        response: created.response,
+        chatId: created.id,
+        rootChatId: newRootId,
+      };
+
+      return copy;
+    });
+
+    await loadChats();
+  } catch (err) {
+    console.error("Error sending message:", err);
+
+    setHistory((prev) => {
+      const copy = [...prev];
+      const idx = copy.findIndex((m) => m.isPending && m.prompt === prompt);
+      if (idx === -1) return copy;
+
+      copy[idx] = {
+        ...copy[idx],
+        response: "Something went wrong sending this message.",
+        isPending: false,
+      };
+
+      return copy;
+    });
+  }
+};
 
   // const handleSelectBranch = async (index, branchRoot) => {
   //   console.log("Selected root branch:", branchRoot);
@@ -363,6 +376,7 @@ export default function HomePage() {
         <BranchGrid
           chats={gridChats}               // only this root's tree
           onSelectChat={handleSelectChatFromGrid}
+          onNewRootChat={handleNewRootChat} 
         />
       )}
     </div>

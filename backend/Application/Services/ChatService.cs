@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Text;
 using static Application.Interfaces.Services.IAiChatService;
@@ -162,23 +163,23 @@ namespace Application.Services
             {
                 var parentChat = await _chatRepo.GetById(chatCreateDto.ParentChatId.Value);
                 rootChatId = parentChat.RootChatId ?? parentChat.Id;
-                _logger.LogInformation("🌳 Parent found → rootChatId={RootId}", rootChatId);
+                _logger.LogInformation("🌳 Parent found → rootChatId={RootId}", rootChatId);               
             }
 
-            var entity = new Chat
-            {
-                Id = newChatId,
-                ChatTitle = chatTitle,
-                UserRequest = chatCreateDto.UserRequest,
-                RootChatId = rootChatId,
-                ParentChatId = chatCreateDto.ParentChatId,
-                GridId = chatCreateDto.GridId,
-                Response = aiResponse,
-                ContextUsed = usedContextWindowPercentage,
-                Createdby = null,
-                CreatedAt = DateTime.UtcNow,
-                ChatModelId = testModelId,
-            };
+                var entity = new Chat
+                {
+                    Id = newChatId,
+                    ChatTitle = chatTitle,
+                    UserRequest = chatCreateDto.UserRequest,
+                    RootChatId = rootChatId,
+                    ParentChatId = chatCreateDto.ParentChatId,
+                    GridId = chatCreateDto.GridId,
+                    Response = aiResponse,
+                    ContextUsed = usedContextWindowPercentage,
+                    Createdby = null,
+                    CreatedAt = DateTime.UtcNow,
+                    ChatModelId = testModelId,
+                };
 
             _logger.LogInformation("💾 Saving chat to database. ChatId={Id}, RootChatId={Root}", newChatId, rootChatId);
 
@@ -336,10 +337,19 @@ namespace Application.Services
 
         public async Task<IEnumerable<Chat>> GetChatsByGridId(Guid gridId)
         {
-            return await _chatRepo.GetQueryable()
+            var rootChatsWithGridId = await _chatRepo.GetQueryable()
                 .Where(c => c.GridId == gridId)
                 //.Where(c => c.ParentChatId == null)
                 .ToListAsync();
+
+            IEnumerable<Chat> result = Enumerable.Empty<Chat>();
+
+            foreach (var rootChat in rootChatsWithGridId)
+            {
+                var tree = await GetChatByRootId(rootChat.Id);
+                result = result.Concat(tree);
+            }
+            return result;
         }
 
     }
