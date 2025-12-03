@@ -11,5 +11,7 @@ namespace Application.DTOs.ChatDto
         public string UserRequest { get; set; }
 
         public Guid? ParentChatId { get; set; }
+
+        public Guid? GridId { get; set; }
     }
 }

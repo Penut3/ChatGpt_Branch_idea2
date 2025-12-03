@@ -13,7 +13,7 @@ namespace Application
             //services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddTransient<IChatService, ChatService>();
             services.AddTransient<IChatModelService, ChatModelService>();
-
+            services.AddTransient<IGridService, GridService>();
             return services;
         }
 

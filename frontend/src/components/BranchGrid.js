@@ -2,13 +2,14 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import "../styles/Branchgrid.css";
 import AddIcon from '@mui/icons-material/Add';
+import { Button } from "@mui/material";
 
 const COLUMN_WIDTH = 260; // distance between levels (x)
 const ROW_HEIGHT = 100;   // distance between rows (y)
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
 
-export default function BranchGrid({ chats, onSelectChat }) {
+export default function BranchGrid({ chats, onSelectChat,  onNewRootChat }) {
   // --- DRAGGING / PANNING ---
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -44,73 +45,78 @@ export default function BranchGrid({ chats, onSelectChat }) {
   }, [isDragging]);
 
   // --- BUILD TREE + LAYOUT POSITIONS ---
-    const { nodes, edges } = useMemo(() => {
-    if (!chats || chats.length === 0) {
-      return { nodes: [], edges: [] };
+const { nodes, edges } = useMemo(() => {
+  if (!chats || chats.length === 0) {
+    return { nodes: [], edges: [] };
+  }
+
+  // Map id -> node data + children
+  const map = new Map();
+  chats.forEach((c) => {
+    map.set(c.id, { chat: c, children: [] });
+  });
+
+  // Link children and collect ALL roots (multiple trees)
+  const roots = [];
+  chats.forEach((c) => {
+    if (c.parentChatId && map.has(c.parentChatId)) {
+      map.get(c.parentChatId).children.push(map.get(c.id));
+    } else {
+      // No parent in this grid => root chat
+      roots.push(map.get(c.id));
     }
+  });
 
-    // Map id -> node data + children
-    const map = new Map();
-    chats.forEach((c) => {
-      map.set(c.id, { chat: c, children: [] });
+  if (roots.length === 0) {
+    // Fallback: just pick the first chat as a root
+    roots.push(map.get(chats[0].id));
+  }
+
+  const positionedNodes = [];
+  const edges = [];
+
+  // We’ll stack each tree under the previous one using row offsets
+  let nextFreeRow = 0; // count of used rows across all trees
+
+  const placeNode = (node, depth, row) => {
+    const x = depth * COLUMN_WIDTH;
+    const y = row * ROW_HEIGHT;
+
+    positionedNodes.push({
+      id: node.chat.id,
+      title: node.chat.chatTitle,
+      x,
+      y,
+      chat: node.chat,
     });
+  };
 
-    // Link children, find root (there should be only one for this grid)
-    let root = null;
-    chats.forEach((c) => {
-      if (c.parentChatId && map.has(c.parentChatId)) {
-        map.get(c.parentChatId).children.push(map.get(c.id));
-      } else {
-        // no parent => root
-        if (!root) root = map.get(c.id);
-      }
-    });
+  const sortByCreated = (a, b) =>
+    new Date(a.chat.createdAt).getTime() - new Date(b.chat.createdAt).getTime();
 
-    if (!root) {
-      // fallback: just pick the first chat
-      root = map.get(chats[0].id);
-    }
+  // We’ll give each tree its own block of rows.
+  const layoutTree = (rootNode) => {
+    const baseRow = nextFreeRow; // main line for this tree
+    let branchRowCounter = baseRow + 1; // rows for branches of this tree only
 
-    const positionedNodes = [];
-    const edges = [];
-    let branchRowCounter = 1; // 0 = main line, 1+ = branches
-
-    const placeNode = (node, depth, row) => {
-      const x = depth * COLUMN_WIDTH;
-      const y = row * ROW_HEIGHT;
-
-      positionedNodes.push({
-        id: node.chat.id,
-        title: node.chat.chatTitle,
-        x,
-        y,
-        chat: node.chat,
-      });
-    };
-
-    const sortByCreated = (a, b) =>
-      new Date(a.chat.createdAt).getTime() - new Date(b.chat.createdAt).getTime();
-
-    // Main branch: always stays on row 0
-    const layoutMain = (node, depth) => {
-      placeNode(node, depth, 0);
+    const layoutMain = (node, depth, row) => {
+      placeNode(node, depth, row);
 
       const children = [...node.children].sort(sortByCreated);
       if (children.length === 0) return;
 
       const mainChild = children[0]; // oldest = main continuation
       edges.push({ from: node.chat.id, to: mainChild.chat.id });
-      layoutMain(mainChild, depth + 1);
+      layoutMain(mainChild, depth + 1, row); // main line stays on the same row
 
       const branchChildren = children.slice(1);
       branchChildren.forEach((child) => {
-        const row = branchRowCounter++;
+        const rowForBranch = branchRowCounter++;
         edges.push({ from: node.chat.id, to: child.chat.id });
-        layoutBranch(child, depth + 1, row);
+        layoutBranch(child, depth + 1, rowForBranch);
       });
     };
 
-    // Branch layout: each branch has its own row
     const layoutBranch = (node, depth, row) => {
       placeNode(node, depth, row);
 
@@ -119,7 +125,7 @@ export default function BranchGrid({ chats, onSelectChat }) {
 
       const mainChild = children[0];
       edges.push({ from: node.chat.id, to: mainChild.chat.id });
-      layoutBranch(mainChild, depth + 1, row); // continue on same row
+      layoutBranch(mainChild, depth + 1, row); // continue branch on same row
 
       const branchChildren = children.slice(1);
       branchChildren.forEach((child) => {
@@ -129,10 +135,18 @@ export default function BranchGrid({ chats, onSelectChat }) {
       });
     };
 
-    layoutMain(root, 0);
+    layoutMain(rootNode, 0, baseRow);
 
-    return { nodes: positionedNodes, edges };
-  }, [chats]);
+    // update global next free row so the next tree starts below this one
+    nextFreeRow = branchRowCounter + 1;
+  };
+
+  // Layout each root tree
+  roots.forEach((rootNode) => layoutTree(rootNode));
+
+  return { nodes: positionedNodes, edges };
+}, [chats]);
+
 
   // Helper to get node center by id for lines
   const nodeById = useMemo(() => {
@@ -158,6 +172,30 @@ export default function BranchGrid({ chats, onSelectChat }) {
         cursor: isDragging ? "grabbing" : "grab",
       }}
     >
+
+            {/* New root chat button */}
+      {onNewRootChat && (
+        <Button
+          variant="contained"
+          size="small"
+          onMouseDown={(e) => e.stopPropagation()}   // 👈 prevent panning
+          onClick={(e) => {
+            e.stopPropagation();
+            onNewRootChat();
+          }}
+          style={{
+            position: "absolute",
+            padding: "10px",
+            top: 20,
+            left: 380,
+            zIndex: 2000,
+            backgroundColor: "#3b3b3b",
+          }}
+        >
+          New root chat
+        </Button>
+      )}
+
       {/* Inner world that moves with offset */}
       <div
         className="branch-grid-world"
@@ -222,6 +260,7 @@ export default function BranchGrid({ chats, onSelectChat }) {
     `ContextHealth: ${remaining}%`;
     
   return (
+    <>
     <button
       key={node.id}
       className="branch-node"
@@ -286,11 +325,13 @@ export default function BranchGrid({ chats, onSelectChat }) {
         <AddIcon />
       </div>
     </button>
+    </>
   );
 })}
 
       </div>
     </div>
     </>
+    
   );
 }

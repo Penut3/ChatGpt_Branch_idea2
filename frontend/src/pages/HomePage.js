@@ -13,10 +13,18 @@ export default function HomePage() {
   const [isSending, setIsSending] = useState(false);
   const [viewMode, setViewMode] = useState("chat");        // "chat" | "grid"
 
-  const [branchChats, setBranchChats] = useState([]);      // chats for current grid
-  const [showBranches, setShowBranches] = useState(false);
-  const [branches, setBranches] = useState([]);            // root chats
-  const [loadingBranches, setLoadingBranches] = useState(false);
+  // const [branchChats, setBranchChats] = useState([]);     
+  // const [showBranches, setShowBranches] = useState(false);
+  // const [branches, setBranches] = useState([]);         
+  // const [loadingBranches, setLoadingBranches] = useState(false);
+
+  
+  // === NEW: grids state ===
+  const [showGrids, setShowGrids] = useState(false);
+  const [grids, setGrids] = useState([]);          // list of grids in sidebar
+  const [loadingGrids, setLoadingGrids] = useState(false);
+  const [gridChats, setGridChats] = useState([]);  // chats belonging to selected grid
+  const [selectedGridId, setSelectedGridId] = useState(null);
 
   const BACKEND_URL = "https://localhost:7151/api/";
 
@@ -24,7 +32,7 @@ export default function HomePage() {
   const loadChats = async () => {
     try {
       setLoadingHeaders(true);
-      const res = await fetch(`${BACKEND_URL}chat/ChatHeaders/Latest`, {
+      const res = await fetch(`${BACKEND_URL}chat/ChatHeaders`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
@@ -75,39 +83,111 @@ export default function HomePage() {
   };
 
   // Load all root chats (for branch sidebar)
-  const loadRootBranches = async () => {
+  // const loadRootBranches = async () => {
+  //   try {
+  //     setLoadingBranches(true);
+  //     const res = await fetch(`${BACKEND_URL}chat/RootChats`, {
+  //       method: "GET",
+  //       headers: { "Content-Type": "application/json" },
+  //     });
+
+  //     const roots = await res.json();
+  //     setBranches(roots);   // branches = root chats
+  //   } catch (err) {
+  //     console.error("Error loading root branches:", err);
+  //   } finally {
+  //     setLoadingBranches(false);
+  //   }
+  // };
+
+  // Load all chats belonging to one root
+const loadBranchTree = async (rootId) => {
+  try {
+    const res = await fetch(`${BACKEND_URL}chat/ByRoot/${rootId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const branch = await res.json();  // [{ id, parentChatId, rootChatId, ... }, ...]
+    setGridChats(branch);
+    setViewMode("grid");
+    return branch;
+  } catch (err) {
+    console.error("Error loading branch tree:", err);
+  }
+};
+
+
+const handleOpenGridFromChat = async () => {
+  if (!history.length) return;
+
+  // rootChatId for this conversation
+  const rootId = history[0].rootChatId || history[0].chatId;
+
+  // Find the header for that root
+  const header =
+    chatHeaders.find((h) => h.id === rootId) ||
+    chatHeaders.find((h) => h.rootChatId === rootId);
+
+  const gridId = header?.gridId || null; // assumes backend adds gridId to ChatHeaders
+
+  if (gridId) {
+    // Part of a grid → show full grid
+    setSelectedGridId(gridId);
+    await loadGridById(gridId);
+  } else {
+    // No grid → show only this root's tree
+    setSelectedGridId(null);
+    await loadBranchTree(rootId);
+  }
+};
+
+
+    // =====================
+  // NEW: load all grids for BranchSidebar
+  // =====================
+  const loadGrids = async () => {
     try {
-      setLoadingBranches(true);
-      const res = await fetch(`${BACKEND_URL}chat/RootChats`, {
+      setLoadingGrids(true);
+      // Adjust endpoint name if different (e.g. "grids" or "grid/All")
+      const res = await fetch(`${BACKEND_URL}grid/all`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
 
-      const roots = await res.json();
-      setBranches(roots);   // branches = root chats
+      const list = await res.json();
+      setGrids(list); // [{ id, name, ... }, ...]
     } catch (err) {
-      console.error("Error loading root branches:", err);
+      console.error("Error loading grids:", err);
     } finally {
-      setLoadingBranches(false);
+      setLoadingGrids(false);
     }
   };
 
-  // Load all chats belonging to one root (for grid)
-  const loadBranchTree = async (rootId) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}chat/ByRoot/${rootId}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
 
-      const branch = await res.json(); 
-      // branch = array of chats in that root tree
-      setBranchChats(branch);
-      return branch;
-    } catch (err) {
-      console.error("Error loading branch tree:", err);
-    }
-  };
+
+  // =====================
+  // NEW: load a single grid (with chats) by id
+  // =====================
+ const loadGridById = async (gridId) => {
+  try {
+    const res = await fetch(`${BACKEND_URL}chat/grid/${gridId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const data = await res.json();
+    // If backend returns just an array of chats:
+    const chats = Array.isArray(data) ? data : (data.chats || []);
+
+    setGridChats(chats);
+    setViewMode("grid");
+    return data;
+  } catch (err) {
+    console.error("Error loading grid:", err);
+  }
+};
+
 
   // When user clicks a chat in the normal sidebar
   const handleSelectChat = async (idx) => {
@@ -135,7 +215,7 @@ export default function HomePage() {
     setViewMode("chat");
   };
 
-  // Delete chat header (and refresh list)
+  // Delete chat header (and refresh list) (ikke i bruk)
   const deleteChat = async (index) => {
     const header = chatHeaders[index];
     if (!header) return;
@@ -174,107 +254,125 @@ export default function HomePage() {
     setViewMode("chat");
   };
 
-  // Send a new message
-  const handleSend = async (prompt) => {
-    if (!prompt.trim()) return;
-    setIsSending(true);
-
-    // Use last message to know parentChatId
-    const lastMessage = history[history.length - 1];
-    const parentChatId = lastMessage ? lastMessage.chatId : null;
-
-    // 1) Optimistically add the user message with pending AI response
-    const tempMessage = {
-      prompt,
-      response: null,
-      chatId: null,
-      rootChatId: lastMessage ? lastMessage.rootChatId : null,
-      isPending: true,
-    };
-
-    setHistory((prev) => [...prev, tempMessage]);
-
-    // 2) Call backend
-    const body = {
-      userRequest: prompt,
-      parentChatId, // null => new root
-    };
-
-    try {
-      const res = await fetch(`${BACKEND_URL}chat/CreateChat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const created = await res.json();
-      const newRootId = created.rootChatId || created.id;
-      setIsSending(false);
-
-      // 3) Update the last pending message with real data from backend
-      setHistory((prev) => {
-        const copy = [...prev];
-        const idx = [...copy]
-          .reverse()
-          .findIndex((m) => m.isPending && m.prompt === prompt);
-
-        if (idx === -1) return copy;
-
-        const realIdx = copy.length - 1 - idx;
-
-        copy[realIdx] = {
-          prompt: created.userRequest,
-          response: created.response,
-          chatId: created.id,
-          rootChatId: newRootId,
-        };
-
-        return copy;
-      });
-
-      // 4) Refresh the headers list
-      await loadChats();
-    } catch (err) {
-      console.error("Error sending message:", err);
-
-      setHistory((prev) => {
-        const copy = [...prev];
-        const idx = copy.findIndex((m) => m.isPending && m.prompt === prompt);
-        if (idx === -1) return copy;
-
-        copy[idx] = {
-          ...copy[idx],
-          response: "Something went wrong sending this message.",
-          isPending: false,
-        };
-
-        return copy;
-      });
-    }
+  const handleSelectGrid = async (index, grid) => {
+  console.log("Selected grid:", grid);
+  setSelectedGridId(grid.id);          // ✅ remember the grid
+  await loadGridById(grid.id);         // loads chats into BranchGrid
   };
 
-  const handleSelectBranch = async (index, branchRoot) => {
-    console.log("Selected root branch:", branchRoot);
-    await loadBranchTree(branchRoot.id);
-    setViewMode("grid");
+const handleNewRootChat = () => {
+  // starting a totally new root chat in this grid
+  setHistory([]);
+  setSelectedIdx(null);
+  setViewMode("chat");
+};
+
+
+ const handleSend = async (prompt) => {
+  if (!prompt.trim()) return;
+  setIsSending(true);
+
+  const lastMessage = history[history.length - 1];
+  const parentChatId = lastMessage ? lastMessage.chatId : null;
+
+  // 🔹 Is this the first message in a new chat?
+  const isNewRootChat = !parentChatId;
+
+  // 🔹 Only attach GridId when creating that *first* chat in a grid
+  const gridId = isNewRootChat && selectedGridId ? selectedGridId : null;
+
+  const tempMessage = {
+    prompt,
+    response: null,
+    chatId: null,
+    rootChatId: lastMessage ? lastMessage.rootChatId : null,
+    isPending: true,
   };
+
+  setHistory((prev) => [...prev, tempMessage]);
+
+  const body = {
+    userRequest: prompt,
+    parentChatId,   // null => new root chain
+    gridId,         // 👈 maps to C# GridId
+  };
+
+  try {
+    const res = await fetch(`${BACKEND_URL}chat/CreateChat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    const created = await res.json();
+    const newRootId = created.rootChatId || created.id;
+    setIsSending(false);
+
+    setHistory((prev) => {
+      const copy = [...prev];
+      const idx = [...copy]
+        .reverse()
+        .findIndex((m) => m.isPending && m.prompt === prompt);
+
+      if (idx === -1) return copy;
+
+      const realIdx = copy.length - 1 - idx;
+
+      copy[realIdx] = {
+        prompt: created.userRequest,
+        response: created.response,
+        chatId: created.id,
+        rootChatId: newRootId,
+      };
+
+      return copy;
+    });
+
+    await loadChats();
+  } catch (err) {
+    console.error("Error sending message:", err);
+
+    setHistory((prev) => {
+      const copy = [...prev];
+      const idx = copy.findIndex((m) => m.isPending && m.prompt === prompt);
+      if (idx === -1) return copy;
+
+      copy[idx] = {
+        ...copy[idx],
+        response: "Something went wrong sending this message.",
+        isPending: false,
+      };
+
+      return copy;
+    });
+  }
+};
+
+  // const handleSelectBranch = async (index, branchRoot) => {
+  //   console.log("Selected root branch:", branchRoot);
+  //   await loadBranchTree(branchRoot.id);
+  //   setViewMode("grid");
+  // };
 
   return (
     <div className="viewport" style={{ display: "flex" }}>
       {/* LEFT SIDE: chat sidebar vs branch sidebar */}
-      {showBranches ? (
+      {showGrids ? (
         <BranchSidebar
-          branches={branches}
-          onSelectBranch={handleSelectBranch}
-          loadingBranches={loadingBranches}
+          grids={grids}
+          onSelectGrid={handleSelectGrid}
+          loadingGrids={loadingGrids}
           onBackToChats={() => {
-            setShowBranches(false);
+            setShowGrids(false);
             setViewMode("chat");
           }}
-          onShowGrid={() => setViewMode("grid")}
+          // You can still use this for "create new grid" if you want
+          onNewGrid={() => {
+            // open a dialog or call a POST /grid here later
+          }}
         />
       ) : (
-        <SideBar
+       <SideBar
           chats={chatHeaders}
           selectedIdx={selectedIdx}
           onSelect={handleSelectChat}
@@ -282,8 +380,9 @@ export default function HomePage() {
           onDeleteChat={deleteChat}
           loading={loadingHeaders}
           onShowBranches={() => {
-            setShowBranches(true);
-            loadRootBranches(); // load roots when entering branch mode
+            // Now this button shows GRIDS instead of branches
+            setShowGrids(true);
+            loadGrids();
           }}
         />
       )}
@@ -295,13 +394,15 @@ export default function HomePage() {
           onSend={handleSend}
           loading={isSending}
           onBranchFromMessage={handleBranchFromMessage}
+          onOpenGridFromChat={handleOpenGridFromChat}
         />
       )}
 
       {viewMode === "grid" && (
         <BranchGrid
-          chats={branchChats}              // only this root's tree
+          chats={gridChats}               // only this root's tree
           onSelectChat={handleSelectChatFromGrid}
+          onNewRootChat={handleNewRootChat} 
         />
       )}
     </div>

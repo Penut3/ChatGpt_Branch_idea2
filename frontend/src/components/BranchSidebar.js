@@ -4,11 +4,11 @@ import { Button, List, ListItem, ListItemText } from "@mui/material";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
 
 export default function BranchSidebar({
-  branches,
-  onSelectBranch,
-  loadingBranches,
+  grids,
+  onSelectGrid,
+  loadingGrids,
   onBackToChats,
-  onShowGrid, // called when "new grid" is clicked
+  onNewGrid, // called when "new grid" is clicked
 }) {
   return (
     <div
@@ -21,11 +21,10 @@ export default function BranchSidebar({
         height: "100%",
         zIndex: 10,
         backgroundColor: "white",
-         overflowY: "auto",
+        overflowY: "auto",
       }}
     >
-      {/* You can keep your logo/title here if you had them before */}
-<div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+      <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
         <img src="/crab.png" style={{ height: "80px" }} alt="CrabGPT" />
       </div>
       <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
@@ -33,6 +32,7 @@ export default function BranchSidebar({
           CrabGPT
         </h1>
       </div>
+
       <Button
         variant="contained"
         fullWidth
@@ -45,27 +45,26 @@ export default function BranchSidebar({
       <Button
         variant="contained"
         fullWidth
-        onClick={onShowGrid}
+        onClick={onNewGrid}
         style={{ backgroundColor: "grey", marginBottom: "10px" }}
       >
         new grid <AltRouteIcon style={{ transform: "rotate(90deg)" }} />
       </Button>
 
-      {loadingBranches && <p>Loading branches...</p>}
+      {loadingGrids && <p>Loading grids...</p>}
 
       <List>
-        {branches.length === 0 && !loadingBranches && (
-          <p style={{ padding: "10px" }}>No branches yet</p>
+        {grids.length === 0 && !loadingGrids && (
+          <p style={{ padding: "10px" }}>No grids yet</p>
         )}
 
-        {branches.map((branch, i) => (
+        {grids.map((grid, i) => (
           <ListItem
             button
-            key={branch.id || i}
-            onClick={() => onSelectBranch && onSelectBranch(i, branch)}
+            key={grid.id || i}
+            onClick={() => onSelectGrid && onSelectGrid(i, grid)}
           >
-            <ListItemText primary={branch.chatTitle || `Root ${i + 1}`} />
-
+            <ListItemText primary={grid.name || `Grid ${i + 1}`} />
           </ListItem>
         ))}
       </List>
