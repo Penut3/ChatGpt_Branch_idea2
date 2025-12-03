@@ -100,22 +100,47 @@ export default function HomePage() {
   //   }
   // };
 
-  // Load all chats belonging to one root (for grid)
-  // const loadBranchTree = async (rootId) => {
-  //   try {
-  //     const res = await fetch(`${BACKEND_URL}chat/ByRoot/${rootId}`, {
-  //       method: "GET",
-  //       headers: { "Content-Type": "application/json" },
-  //     });
+  // Load all chats belonging to one root
+const loadBranchTree = async (rootId) => {
+  try {
+    const res = await fetch(`${BACKEND_URL}chat/ByRoot/${rootId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
 
-  //     const branch = await res.json(); 
-     
-  //     setBranchChats(branch);
-  //     return branch;
-  //   } catch (err) {
-  //     console.error("Error loading branch tree:", err);
-  //   }
-  // };
+    const branch = await res.json();  // [{ id, parentChatId, rootChatId, ... }, ...]
+    setGridChats(branch);
+    setViewMode("grid");
+    return branch;
+  } catch (err) {
+    console.error("Error loading branch tree:", err);
+  }
+};
+
+
+const handleOpenGridFromChat = async () => {
+  if (!history.length) return;
+
+  // rootChatId for this conversation
+  const rootId = history[0].rootChatId || history[0].chatId;
+
+  // Find the header for that root
+  const header =
+    chatHeaders.find((h) => h.id === rootId) ||
+    chatHeaders.find((h) => h.rootChatId === rootId);
+
+  const gridId = header?.gridId || null; // assumes backend adds gridId to ChatHeaders
+
+  if (gridId) {
+    // Part of a grid → show full grid
+    setSelectedGridId(gridId);
+    await loadGridById(gridId);
+  } else {
+    // No grid → show only this root's tree
+    setSelectedGridId(null);
+    await loadBranchTree(rootId);
+  }
+};
 
 
     // =====================
@@ -369,6 +394,7 @@ const handleNewRootChat = () => {
           onSend={handleSend}
           loading={isSending}
           onBranchFromMessage={handleBranchFromMessage}
+          onOpenGridFromChat={handleOpenGridFromChat}
         />
       )}
 

@@ -9,6 +9,7 @@ import { materialOceanic } from "react-syntax-highlighter/dist/esm/styles/prism"
 import IconButton from "@mui/material/IconButton";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
+import GridViewIcon from '@mui/icons-material/GridView';
 
 // 🔹 Reusable CodeBlock component
 const CodeBlock = ({ node, inline, className, children, ...props }) => {
@@ -103,7 +104,7 @@ const CodeBlock = ({ node, inline, className, children, ...props }) => {
   );
 };
 
-export default function ChatWindow({ history, onSend, loading, onBranchFromMessage }) {
+export default function ChatWindow({ history, onSend, loading, onBranchFromMessage, onOpenGridFromChat, }) {
   const [input, setInput] = useState("");
   const bottomRef = useRef(null);
 
@@ -113,6 +114,7 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
     setInput("");
   };
 
+
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
@@ -121,6 +123,19 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
 
   return (
     <div className="ai-section" style={{ marginLeft: 300, width: "100%" }}>
+
+      <div style={{position:"fixed", left:"370px", top:"20px"}}>
+        <Button style={{ textTransform: "none",
+            minWidth: "28px",
+            width: "28px",
+            height: "28px",
+            color: "white",
+            borderRadius: "8px",
+            whiteSpace: "nowrap",}}
+            onClick={onOpenGridFromChat}>
+            <GridViewIcon style={{color: "#3b3b3b"}}/>
+          </Button>
+      </div>
       <div className="output-section">
         {history.length === 0 ? (
           <p>Empty chat</p>
@@ -204,6 +219,8 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
                   </Tooltip>
                 )}
             </div>
+
+
           ))
         )}
 
@@ -225,7 +242,7 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
       {/* INPUT ... (unchanged) */}
       <div className="input-section">
         <div className="input-text-field" style={{ position: "relative" }}>
-         <textarea
+          <textarea
             placeholder="Write here"
             className="input-text"
             value={input}

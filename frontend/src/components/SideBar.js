@@ -107,6 +107,7 @@ export default function SideBar({
         height: "100%",
         zIndex: 10,
         overflowY: "auto",
+        backgroundColor: "white"
       }}
     >
       <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
