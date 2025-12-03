@@ -17,5 +17,6 @@ namespace Application.DTOs.ChatDto
         public string UserRequest { get; set; }
 
         public DateTime CreatedAt { get; set; }
+        public Guid? GridId { get; set; }
     }
 }
