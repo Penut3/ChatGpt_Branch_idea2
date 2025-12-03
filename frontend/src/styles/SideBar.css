@@ -3,11 +3,17 @@
 .sidebar{
     position: absolute;
     height: 100%;
-    background-color: #ffffff;
-    border-right: 1px var(--grey) solid;
+    background-color: var(--b-dark);
+    /* border-right: 1px var(--grey) solid; */
     padding: 20px;
     overflow-y: auto;
 
+}
+
+.sidebar-small-text{
+    padding: 0px;
+    margin: 0px;
+    color: var(--t-smoke);
 }
 
 .chat-grid{

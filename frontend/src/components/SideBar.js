@@ -11,6 +11,8 @@ import AltRouteIcon from "@mui/icons-material/AltRoute";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
+import "../styles/SideBar.css"
+
 export default function SideBar({
   chats,
   selectedIdx,
@@ -101,13 +103,12 @@ export default function SideBar({
       className="sidebar"
       style={{
         width: 350,
-        borderRight: "1px solid #ccc",
+        // borderRight: "1px solid #ccc",
         padding: "10px",
         position: "fixed",
         height: "100%",
         zIndex: 10,
         overflowY: "auto",
-        backgroundColor: "white"
       }}
     >
       <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
@@ -163,10 +164,10 @@ export default function SideBar({
                   alignItems: "center",
                 }}
               >
-                <ListItemText
-                  primary={rootChat.userRequest || "Root chat"}
-                  secondary={rootChat.chatTitle || "Untitled chat"}
-                />
+                <div>
+                  <p>{rootChat.userRequest}</p>
+                  <p className="sidebar-small-text">{rootChat.chatTitle}</p>
+               </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   {/* Dropdown only if there are children */}
                   {hasChildren && (
@@ -205,10 +206,10 @@ export default function SideBar({
                           alignItems: "center",
                         }}
                       >
-                        <ListItemText
-                          primary={chat.userRequest || "Chat"}
-                          secondary={chat.chatTitle || "Untitled chat"}
-                        />
+                        <div>
+                            <p>{rootChat.userRequest}</p>
+                            <p className="sidebar-small-text">{rootChat.chatTitle}</p>
+                        </div>
                       </ListItemButton>
                     ))}
                   </List>
