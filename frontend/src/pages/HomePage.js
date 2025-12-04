@@ -30,23 +30,30 @@ export default function HomePage() {
   const BACKEND_URL = "https://localhost:7151/api/";
 
   // Load headers (one per chat chain)
-  const loadChats = async () => {
-    try {
-      setLoadingHeaders(true);
-      const res = await fetch(`${BACKEND_URL}chat/ChatHeaders`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
+ const loadChats = async () => {
+  try {
+    setLoadingHeaders(true);
 
-      const data = await res.json();
-      // data: { id, chatTitle, createdAt, parentChatId, rootChatId, contextHealth, userRequest  }[]
-      setChatHeaders(data);
-    } catch (err) {
-      console.error("Error loading chats:", err);
-    } finally {
-      setLoadingHeaders(false);
-    }
-  };
+    // Fire both requests in parallel (faster)
+    const [latestRes, rootRes] = await Promise.all([
+      fetch(`${BACKEND_URL}chat/ChatHeaders/Latest`),
+      fetch(`${BACKEND_URL}chat/RootChats`)
+    ]);
+
+    const latestChats = await latestRes.json();
+    const rootChats = await rootRes.json();
+
+    // Combine them however you want:
+    const combined = [...latestChats, ...rootChats];
+
+    setChatHeaders(combined);
+  } catch (err) {
+    console.error("Error loading chats:", err);
+  } finally {
+    setLoadingHeaders(false);
+  }
+};
+
 
   useEffect(() => {
     loadChats();
