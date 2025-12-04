@@ -67,8 +67,8 @@ const CodeBlock = ({ node, inline, className, children, ...props }) => {
           alignItems: "center",
           padding: "4px 8px",
           fontSize: "0.75rem",
-          backgroundColor: "#f5f5f5",
-          border: "1px solid #e0e0e0",
+          backgroundColor: "black",
+         
           borderBottom: "none",
         }}
       >
@@ -91,7 +91,7 @@ const CodeBlock = ({ node, inline, className, children, ...props }) => {
         PreTag="div"
         customStyle={{
           margin: 0,
-          border: "1px solid #e0e0e0",
+          backgroundColor: "black",
           borderTop: "none",
           borderRadius: "0 0 8px 8px",
           padding: "12px",
