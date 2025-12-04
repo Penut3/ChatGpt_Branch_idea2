@@ -130,6 +130,7 @@ export default function BranchSidebar({
               },
               padding: "10px 16px",
               borderRadius: "6px",
+              marginTop:"10px",
               transition: "0.2s",
               backgroundImage: `
                 linear-gradient(to right, rgba(24, 24, 24, 1), rgba(24, 24, 24, 0)),

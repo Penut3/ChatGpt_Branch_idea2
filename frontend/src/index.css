@@ -23,6 +23,15 @@ input:focus{
   outline: none;
 }
 
+.MuiTouchRipple-root {
+  display: none !important;
+}
+
+/* Also removes fade animation */
+.MuiTouchRipple-child {
+  animation: none !important;
+}
+
 .viewport{
   width: 100%;
   min-height: 100vh;
