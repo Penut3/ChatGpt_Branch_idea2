@@ -184,6 +184,16 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
                 <ReactMarkdown
                   components={{
                     code: CodeBlock,
+
+                    hr: ({ node }) => (
+                      <div
+                        style={{
+                          borderTop: "1px solid #555",
+                          margin: "24px 0",
+                          opacity: 0.6,
+                        }}
+                      />
+                    ),
                   }}
                 >
                   {item.response || ""}

@@ -289,8 +289,8 @@ export default function SideBar({
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "center",
-backgroundColor: selectedIdx === index ? "#222" : "transparent",
-    color: selectedIdx === index ? "white" : "inherit",
+                          backgroundColor: selectedIdx === index ? "#222" : "transparent",
+                          color: selectedIdx === index ? "white" : "inherit",
                         }}
                       >
                         <div>
