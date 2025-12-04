@@ -19,6 +19,10 @@ body {
   font-family: 'Courier New', Courier, monospace;
 }
 
+input:focus{
+  outline: none;
+}
+
 .viewport{
   width: 100%;
   min-height: 100vh;

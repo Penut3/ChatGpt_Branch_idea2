@@ -3,6 +3,7 @@ import SideBar from "../components/SideBar";
 import ChatWindow from "../components/ChatWindow";
 import BranchSidebar from "../components/BranchSidebar";
 import BranchGrid from "../components/BranchGrid";
+import { jsx } from "react/jsx-runtime";
 
 export default function HomePage() {
   const [chatHeaders, setChatHeaders] = useState([]);      // sidebar items
@@ -81,6 +82,28 @@ export default function HomePage() {
       setLoadingChat(false);
     }
   };
+
+// HomePage.jsx
+
+const createNewGrid = async (gridName) => {
+  try {
+    const res = await fetch(`${BACKEND_URL}grid/CreateGrid`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: gridName }), // 👈 matches backend: { "name": "string" }
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to create grid");
+    }
+
+    const created = await res.json(); // e.g. { id, name, ... }
+    setGrids((prev) => [...prev, created]);
+  } catch (err) {
+    console.error("Error creating grid:", err);
+  }
+};
+
 
   // Load all root chats (for branch sidebar)
   // const loadRootBranches = async () => {
@@ -367,9 +390,7 @@ const handleNewRootChat = () => {
             setViewMode("chat");
           }}
           // You can still use this for "create new grid" if you want
-          onNewGrid={() => {
-            // open a dialog or call a POST /grid here later
-          }}
+          onNewGrid={createNewGrid}
         />
       ) : (
        <SideBar
