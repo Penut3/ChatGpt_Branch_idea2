@@ -240,6 +240,8 @@ export default function SideBar({
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  backgroundColor: selectedIdx === rootIndex ? "#222" : "transparent",
+    color: selectedIdx === rootIndex ? "white" : "inherit",
                 }}
               >
                 <div>
@@ -279,6 +281,7 @@ export default function SideBar({
                         key={chat.id}
                         selected={selectedIdx === index}
                         onClick={() => onSelect(index)}
+                        
                         onMouseEnter={() => setHoveredIdx(index)}
                         onMouseLeave={() => setHoveredIdx(null)}
                         style={{
@@ -286,6 +289,8 @@ export default function SideBar({
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "center",
+backgroundColor: selectedIdx === index ? "#222" : "transparent",
+    color: selectedIdx === index ? "white" : "inherit",
                         }}
                       >
                         <div>
