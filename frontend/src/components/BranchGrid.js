@@ -11,7 +11,7 @@ const NODE_HEIGHT = 70;
 
 export default function BranchGrid({ chats, onSelectChat,  onNewRootChat }) {
   // --- DRAGGING / PANNING ---
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [offset, setOffset] = useState({ x: 500, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
   const lastPosRef = useRef({ x: 0, y: 0 });
 
@@ -22,7 +22,7 @@ export default function BranchGrid({ chats, onSelectChat,  onNewRootChat }) {
     lastPosRef.current = { x: e.clientX, y: e.clientY };
   };
   
-
+  
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDragging) return;
@@ -192,7 +192,7 @@ const { nodes, edges } = useMemo(() => {
             backgroundColor: "#3b3b3b",
           }}
         >
-          New root chat
+          <p>New root chat</p>
         </Button>
       )}
 
