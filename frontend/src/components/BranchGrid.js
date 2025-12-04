@@ -249,8 +249,8 @@ const { nodes, edges } = useMemo(() => {
     statusMessage = "Healthy: Accurate responses";
   } else if (remaining >= 30) {
     statusMessage = "Consider new Chat";
-  } else if (remaining >= 15) {
-    statusMessage = "UnHealthy: Turnication will be";
+  } else if (remaining >= 0) {
+    statusMessage = "UnHealthy: Turnication Activated";
   } else {
     statusMessage = "Critical context level! Summarize or start a new branch.";
   }
@@ -305,7 +305,7 @@ const { nodes, edges } = useMemo(() => {
             height: "100%",
             backgroundColor: barColor,
             transition: "width 0.3s ease",
-            padding: "20px"
+            padding: "5px"
           }}
         />
       </div>
