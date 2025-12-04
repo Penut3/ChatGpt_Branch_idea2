@@ -27,6 +27,8 @@ export default function HomePage() {
   const [gridChats, setGridChats] = useState([]);  // chats belonging to selected grid
   const [selectedGridId, setSelectedGridId] = useState(null);
 
+  const [isInChatType, setIsInChatType] = useState(null);
+
   const BACKEND_URL = "https://localhost:7151/api/";
 
   // Load headers (one per chat chain)
@@ -211,6 +213,7 @@ const handleOpenGridFromChat = async () => {
     const chats = Array.isArray(data) ? data : (data.chats || []);
 
     setGridChats(chats);
+    setIsInChatType("grid")
     setViewMode("grid");
     return data;
   } catch (err) {
@@ -221,6 +224,7 @@ const handleOpenGridFromChat = async () => {
 
   // When user clicks a chat in the normal sidebar
   const handleSelectChat = async (idx) => {
+    setIsInChatType("chat")
     setSelectedIdx(idx);
     const header = chatHeaders[idx];
     if (!header) return;
@@ -398,6 +402,7 @@ const handleNewRootChat = () => {
           }}
           // You can still use this for "create new grid" if you want
           onNewGrid={createNewGrid}
+           isInChatType={isInChatType}
         />
       ) : (
        <SideBar
@@ -412,6 +417,7 @@ const handleNewRootChat = () => {
             setShowGrids(true);
             loadGrids();
           }}
+          isInChatType={isInChatType}
         />
       )}
 
@@ -423,6 +429,7 @@ const handleNewRootChat = () => {
           loading={isSending}
           onBranchFromMessage={handleBranchFromMessage}
           onOpenGridFromChat={handleOpenGridFromChat}
+          isInChatType={isInChatType}
         />
       )}
 
@@ -431,6 +438,7 @@ const handleNewRootChat = () => {
           chats={gridChats}               // only this root's tree
           onSelectChat={handleSelectChatFromGrid}
           onNewRootChat={handleNewRootChat} 
+          isInChatType={isInChatType}
         />
       )}
     </div>

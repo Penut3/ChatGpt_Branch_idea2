@@ -9,7 +9,7 @@ const ROW_HEIGHT = 100;   // distance between rows (y)
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
 
-export default function BranchGrid({ chats, onSelectChat,  onNewRootChat }) {
+export default function BranchGrid({ chats, onSelectChat,  onNewRootChat, isInChatType }) {
   // --- DRAGGING / PANNING ---
   const [offset, setOffset] = useState({ x: 500, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
@@ -174,7 +174,7 @@ const { nodes, edges } = useMemo(() => {
     >
 
             {/* New root chat button */}
-      {onNewRootChat && (
+      {onNewRootChat && isInChatType == "grid" &&(
         <Button
           variant="contained"
           size="small"
