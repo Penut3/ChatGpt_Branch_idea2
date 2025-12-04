@@ -126,7 +126,7 @@ export default function SideBar({
         onClick={onShowBranches}
         style={{ backgroundColor: "black", marginBottom: "10px" }}
       >
-        BRANCHES <AltRouteIcon style={{ transform: "rotate(90deg)" }} />
+        GRIDS <AltRouteIcon style={{ transform: "rotate(90deg)" }} />
       </Button>
 
       <Button
@@ -207,8 +207,8 @@ export default function SideBar({
                         }}
                       >
                         <div>
-                            <p>{rootChat.userRequest}</p>
-                            <p className="sidebar-small-text">{rootChat.chatTitle}</p>
+                            <p>{chat.userRequest}</p>
+                            <p className="sidebar-small-text">{chat.chatTitle}</p>
                         </div>
                       </ListItemButton>
                     ))}
