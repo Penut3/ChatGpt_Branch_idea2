@@ -15,7 +15,7 @@ env:
   PUBLISH_OUTPUT: '${{ github.workspace }}/publish-output'
   # DOTNET_VERSION: '8.0.x'
   NODE_VERSION: '20.19.0'
-  CI: true
+  CI: false
 
 permissions:
   id-token: write
