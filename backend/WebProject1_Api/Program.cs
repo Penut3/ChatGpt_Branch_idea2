@@ -121,7 +121,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                 "http://localhost:3000",
                 "http://localhost:3001",  // dev
-                "https://primocommunication.no", // prod SPA origin
+                "https://witty-flower-0e3ae4303.3.azurestaticapps.net",
                 "http://localhost:5173"
             )
             .AllowAnyHeader()
