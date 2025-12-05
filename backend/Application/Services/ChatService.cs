@@ -251,7 +251,8 @@ namespace Application.Services
                     CreatedAt = chat.CreatedAt,
                     ParentChatId = chat.ParentChatId,
                     RootChatId = chat.RootChatId,
-                    ContextUsed = chat.ContextUsed
+                    ContextUsed = chat.ContextUsed,
+                    GridId = chat.GridId
                 };
 
                 list.Add(currentDtoObject);

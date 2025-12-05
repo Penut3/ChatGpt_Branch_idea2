@@ -82,6 +82,7 @@ export default function HomePage() {
         response: c.response,
         chatId: c.id,
         rootChatId: c.rootChatId,
+        gridId: c.gridId ?? null,
       }));
 
       setHistory(mapped);
@@ -153,26 +154,23 @@ const loadBranchTree = async (rootId) => {
 const handleOpenGridFromChat = async () => {
   if (!history.length) return;
 
-  // rootChatId for this conversation
-  const rootId = history[0].rootChatId || history[0].chatId;
-
-  // Find the header for that root
-  const header =
-    chatHeaders.find((h) => h.id === rootId) ||
-    chatHeaders.find((h) => h.rootChatId === rootId);
-
-  const gridId = header?.gridId || null; // assumes backend adds gridId to ChatHeaders
+  const { rootChatId, chatId, gridId } = history[0];
+  const rootId = rootChatId || chatId;
 
   if (gridId) {
-    // Part of a grid → show full grid
+    // This chat belongs to a grid → open that grid
     setSelectedGridId(gridId);
     await loadGridById(gridId);
+    setIsInChatType("grid");
   } else {
-    // No grid → show only this root's tree
+    // No grid → just show this root's tree
     setSelectedGridId(null);
     await loadBranchTree(rootId);
+    setIsInChatType("chat");
   }
 };
+
+
 
 
     // =====================
