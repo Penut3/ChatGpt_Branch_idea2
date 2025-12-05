@@ -29,7 +29,12 @@ export default function HomePage() {
 
   const [isInChatType, setIsInChatType] = useState(null);
 
-  const BACKEND_URL = "https://localhost:7151/api/";
+  const BACKEND_URL =
+  process.env.NODE_ENV === "development"
+    ? "https://localhost:7151/api/"
+    : "https://backend-test-bxfqebacdegzgdcw.westeurope-01.azurewebsites.net";
+
+
 
   // Load headers (one per chat chain)
  const loadChats = async () => {
