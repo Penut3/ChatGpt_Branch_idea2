@@ -251,7 +251,8 @@ namespace Application.Services
                     CreatedAt = chat.CreatedAt,
                     ParentChatId = chat.ParentChatId,
                     RootChatId = chat.RootChatId,
-                    ContextUsed = chat.ContextUsed
+                    ContextUsed = chat.ContextUsed,
+                    GridId = chat.GridId
                 };
 
                 list.Add(currentDtoObject);
@@ -318,11 +319,23 @@ namespace Application.Services
             return headers;
         }
 
-        public async Task<IEnumerable<Chat>> GetRootChats()
+        public async Task<IEnumerable<ChatGetHeaderDto>> GetRootChats()
         {
             return await _chatRepo
                 .GetQueryable()
                 .Where(c => c.ParentChatId == null)
+                .Select(chat => new ChatGetHeaderDto
+                {
+                    Id = chat.Id,
+                    ChatTitle = chat.ChatTitle,
+                    CreatedAt = chat.CreatedAt,
+                    ParentChatId = chat.ParentChatId,
+                    RootChatId = chat.RootChatId,
+                    ContextUsed = chat.ContextUsed,
+                    UserRequest = chat.UserRequest.Length > 50
+                    ? chat.UserRequest.Substring(0, 50)
+                    : chat.UserRequest,
+                })
                 .ToListAsync();
         }
 

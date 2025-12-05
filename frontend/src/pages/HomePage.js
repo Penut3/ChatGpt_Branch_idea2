@@ -3,6 +3,7 @@ import SideBar from "../components/SideBar";
 import ChatWindow from "../components/ChatWindow";
 import BranchSidebar from "../components/BranchSidebar";
 import BranchGrid from "../components/BranchGrid";
+import { jsx } from "react/jsx-runtime";
 
 export default function HomePage() {
   const [chatHeaders, setChatHeaders] = useState([]);      // sidebar items
@@ -26,26 +27,35 @@ export default function HomePage() {
   const [gridChats, setGridChats] = useState([]);  // chats belonging to selected grid
   const [selectedGridId, setSelectedGridId] = useState(null);
 
+  const [isInChatType, setIsInChatType] = useState(null);
+
   const BACKEND_URL = "https://localhost:7151/api/";
 
   // Load headers (one per chat chain)
-  const loadChats = async () => {
-    try {
-      setLoadingHeaders(true);
-      const res = await fetch(`${BACKEND_URL}chat/ChatHeaders`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
+ const loadChats = async () => {
+  try {
+    setLoadingHeaders(true);
 
-      const data = await res.json();
-      // data: { id, chatTitle, createdAt, parentChatId, rootChatId, contextHealth, userRequest  }[]
-      setChatHeaders(data);
-    } catch (err) {
-      console.error("Error loading chats:", err);
-    } finally {
-      setLoadingHeaders(false);
-    }
-  };
+    // Fire both requests in parallel (faster)
+    const [latestRes, rootRes] = await Promise.all([
+      fetch(`${BACKEND_URL}chat/ChatHeaders/Latest`),
+      fetch(`${BACKEND_URL}chat/RootChats`)
+    ]);
+
+    const latestChats = await latestRes.json();
+    const rootChats = await rootRes.json();
+
+    // Combine them however you want:
+    const combined = [...latestChats, ...rootChats];
+
+    setChatHeaders(combined);
+  } catch (err) {
+    console.error("Error loading chats:", err);
+  } finally {
+    setLoadingHeaders(false);
+  }
+};
+
 
   useEffect(() => {
     loadChats();
@@ -72,6 +82,7 @@ export default function HomePage() {
         response: c.response,
         chatId: c.id,
         rootChatId: c.rootChatId,
+        gridId: c.gridId ?? null,
       }));
 
       setHistory(mapped);
@@ -81,6 +92,28 @@ export default function HomePage() {
       setLoadingChat(false);
     }
   };
+
+// HomePage.jsx
+
+const createNewGrid = async (gridName) => {
+  try {
+    const res = await fetch(`${BACKEND_URL}grid/CreateGrid`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: gridName }), // 👈 matches backend: { "name": "string" }
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to create grid");
+    }
+
+    const created = await res.json(); // e.g. { id, name, ... }
+    setGrids((prev) => [...prev, created]);
+  } catch (err) {
+    console.error("Error creating grid:", err);
+  }
+};
+
 
   // Load all root chats (for branch sidebar)
   // const loadRootBranches = async () => {
@@ -121,26 +154,23 @@ const loadBranchTree = async (rootId) => {
 const handleOpenGridFromChat = async () => {
   if (!history.length) return;
 
-  // rootChatId for this conversation
-  const rootId = history[0].rootChatId || history[0].chatId;
-
-  // Find the header for that root
-  const header =
-    chatHeaders.find((h) => h.id === rootId) ||
-    chatHeaders.find((h) => h.rootChatId === rootId);
-
-  const gridId = header?.gridId || null; // assumes backend adds gridId to ChatHeaders
+  const { rootChatId, chatId, gridId } = history[0];
+  const rootId = rootChatId || chatId;
 
   if (gridId) {
-    // Part of a grid → show full grid
+    // This chat belongs to a grid → open that grid
     setSelectedGridId(gridId);
     await loadGridById(gridId);
+    setIsInChatType("grid");
   } else {
-    // No grid → show only this root's tree
+    // No grid → just show this root's tree
     setSelectedGridId(null);
     await loadBranchTree(rootId);
+    setIsInChatType("chat");
   }
 };
+
+
 
 
     // =====================
@@ -181,6 +211,7 @@ const handleOpenGridFromChat = async () => {
     const chats = Array.isArray(data) ? data : (data.chats || []);
 
     setGridChats(chats);
+    setIsInChatType("grid")
     setViewMode("grid");
     return data;
   } catch (err) {
@@ -191,6 +222,7 @@ const handleOpenGridFromChat = async () => {
 
   // When user clicks a chat in the normal sidebar
   const handleSelectChat = async (idx) => {
+    setIsInChatType("chat")
     setSelectedIdx(idx);
     const header = chatHeaders[idx];
     if (!header) return;
@@ -367,9 +399,8 @@ const handleNewRootChat = () => {
             setViewMode("chat");
           }}
           // You can still use this for "create new grid" if you want
-          onNewGrid={() => {
-            // open a dialog or call a POST /grid here later
-          }}
+          onNewGrid={createNewGrid}
+           isInChatType={isInChatType}
         />
       ) : (
        <SideBar
@@ -384,6 +415,7 @@ const handleNewRootChat = () => {
             setShowGrids(true);
             loadGrids();
           }}
+          isInChatType={isInChatType}
         />
       )}
 
@@ -395,6 +427,7 @@ const handleNewRootChat = () => {
           loading={isSending}
           onBranchFromMessage={handleBranchFromMessage}
           onOpenGridFromChat={handleOpenGridFromChat}
+          isInChatType={isInChatType}
         />
       )}
 
@@ -403,6 +436,7 @@ const handleNewRootChat = () => {
           chats={gridChats}               // only this root's tree
           onSelectChat={handleSelectChatFromGrid}
           onNewRootChat={handleNewRootChat} 
+          isInChatType={isInChatType}
         />
       )}
     </div>

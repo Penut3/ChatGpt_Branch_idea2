@@ -4,7 +4,7 @@
   height: 100vh;
   position: relative;
   overflow: hidden;
-  background-color: #0b0b0b;
+  background-color: var(--b-dark);
 
   /* subtle grid */
   background-image:

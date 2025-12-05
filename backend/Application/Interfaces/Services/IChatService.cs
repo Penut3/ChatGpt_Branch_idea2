@@ -17,7 +17,7 @@ namespace Application.Interfaces.Services
         Task<IEnumerable<ChatGetHeaderDto>> GetChatHeader();
         Task<IEnumerable<ChatGetHeaderDto>> GetChatHeaderLatest();
 
-        Task<IEnumerable<Chat>> GetRootChats();
+        Task<IEnumerable<ChatGetHeaderDto>> GetRootChats();
 
         Task<IEnumerable<Chat>> GetChatByRootId(Guid id);
         Task<IEnumerable<Chat>> GetChatsByGridId(Guid gridId);

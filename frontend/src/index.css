@@ -1,13 +1,35 @@
 :root{
   --grey: rgba(199, 199, 199, 0.9);
+
+  /* chatgpt colors */
+  --b-dark: #181818;
+  --b-grey: #212121;
+  --b-light-grey: #303030;
+
+  --t-white: #FFFFFF;
+  --t-smoke: #5D5D5D;
 }
 
 body {
   margin: 0px;
+  background-color: var(--b-grey);
 }
 
 .font1{
   font-family: 'Courier New', Courier, monospace;
+}
+
+input:focus{
+  outline: none;
+}
+
+.MuiTouchRipple-root {
+  display: none !important;
+}
+
+/* Also removes fade animation */
+.MuiTouchRipple-child {
+  animation: none !important;
 }
 
 .viewport{
@@ -39,34 +61,75 @@ body {
 
 .input-section{
   position: fixed;
-  height: 180px;
-  width: 800px;
+  height: auto;
+  --inputfield-width: 800px;
+  width: var(--inputfield-width);
   z-index: 3;
   bottom: 0px;
+  background-color: var(--b-grey);
+  padding-bottom: 40px;
 }
 
 .input-text-field{
-  height: 160px;
+  display: flex;
+ 
   width: 100%;
+  
   border-radius: 8px;
-  border: 1px solid var(--grey);
-  background-color: white;
+  background-color: var(--b-light-grey);
   padding: 10px;
-  padding-bottom: 30px;
+  box-shadow: 0 0 2px #181818;
+  
+ 
 }
 
-.input-text{
-  padding: 10px;
+.input-text {
   border-radius: 8px;
-  width: 100%;
-  height: 100px;
+  border: none;
+  width: calc(100% - 50px);
+  font-size: 16px;
+  background-color: transparent;
+  resize: none;
+  box-shadow: none;
+  padding: 5px;
+  line-height: 1.4;
+  min-height: calc(1.4em + 10px);  /* ~1 line + padding */
+  field-sizing: content;   
+  flex-direction: column-reverse;
+  max-height: 500px;
+ 
+   
+}
+.input-text:focus {
+  outline: none;
 }
 
 
+::-webkit-scrollbar-track {
+    background: transparent;   /* Removes background color */
+    border: none;              /* Removes border */
+}
 
+/* Optionally style the scrollbar thumb or hide it */
+::-webkit-scrollbar-thumb {
+    background: var(--b-light-grey);  /* or transparent to hide */
+    border: none;
+    border-radius: 8px;
+}
+
+/* Width/height of scrollbar itself */
+::-webkit-scrollbar {
+    width: 8px;    /* or 0 to fully hide */
+    background: transparent;
+}
 /* Reset margin and padding for all elements */
 * {
  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   
   box-sizing: border-box;
+  color: var(--t-white)
+}
+p {
+    margin: 0px;
+   color: var(--t-white)
 }

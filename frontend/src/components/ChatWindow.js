@@ -10,7 +10,8 @@ import IconButton from "@mui/material/IconButton";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 import GridViewIcon from '@mui/icons-material/GridView';
-
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import AltRouteIcon from "@mui/icons-material/AltRoute";
 // 🔹 Reusable CodeBlock component
 const CodeBlock = ({ node, inline, className, children, ...props }) => {
   const [copied, setCopied] = React.useState(false);
@@ -66,8 +67,8 @@ const CodeBlock = ({ node, inline, className, children, ...props }) => {
           alignItems: "center",
           padding: "4px 8px",
           fontSize: "0.75rem",
-          backgroundColor: "#f5f5f5",
-          border: "1px solid #e0e0e0",
+          backgroundColor: "black",
+         
           borderBottom: "none",
         }}
       >
@@ -90,7 +91,7 @@ const CodeBlock = ({ node, inline, className, children, ...props }) => {
         PreTag="div"
         customStyle={{
           margin: 0,
-          border: "1px solid #e0e0e0",
+          backgroundColor: "black",
           borderTop: "none",
           borderRadius: "0 0 8px 8px",
           padding: "12px",
@@ -124,7 +125,7 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
   return (
     <div className="ai-section" style={{ marginLeft: 300, width: "100%" }}>
 
-      <div style={{position:"fixed", left:"370px", top:"20px"}}>
+      <div style={{position:"fixed", left:"390px", top:"20px"}}>
         <Button style={{ textTransform: "none",
             minWidth: "28px",
             width: "28px",
@@ -133,7 +134,9 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
             borderRadius: "8px",
             whiteSpace: "nowrap",}}
             onClick={onOpenGridFromChat}>
-            <GridViewIcon style={{color: "#3b3b3b"}}/>
+              
+            <GridViewIcon style={{color: "#3b3b3b"}} />
+            <p style={{paddingLeft:"5px"}}>Grid</p>
           </Button>
       </div>
       <div className="output-section">
@@ -153,9 +156,10 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
               >
                 <div
                   style={{
-                    backgroundColor: "var(--grey)",
+                    backgroundColor: "var(--b-light-grey)",
                     padding: "10px",
                     borderRadius: "8px",
+                    boxShadow:"0 0 2px #181818"
                   }}
                 >
                   {item.prompt}
@@ -180,6 +184,16 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
                 <ReactMarkdown
                   components={{
                     code: CodeBlock,
+
+                    hr: ({ node }) => (
+                      <div
+                        style={{
+                          borderTop: "1px solid #555",
+                          margin: "24px 0",
+                          opacity: 0.6,
+                        }}
+                      />
+                    ),
                   }}
                 >
                   {item.response || ""}
@@ -203,18 +217,20 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
                         right: "-40px",
                         transform: "translateY(-50%)",
                         fontSize: "10px",
-                        padding: "2px",
+                       
                         textTransform: "none",
-                        minWidth: "28px",
-                        width: "28px",
-                        height: "28px",
+                        minWidth: "36px",
+                        width: "36px",
+                        height: "36px",
                         backgroundColor: "black",
                         color: "white",
                         borderRadius: "8px",
                         whiteSpace: "nowrap",
+                        border:"none"
                       }}
                     >
-                      <TurnLeftIcon style={{ transform: "rotate(180deg)", fontSize: "25px" }} />
+                       <AltRouteIcon style={{ transform: "rotate(90deg)", fontSize: "25px" }} />
+                    
                     </Button>
                   </Tooltip>
                 )}
@@ -241,10 +257,11 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
 
       {/* INPUT ... (unchanged) */}
       <div className="input-section">
-        <div className="input-text-field" style={{ position: "relative" }}>
+        <div className="input-text-field">
           <textarea
             placeholder="Write here"
             className="input-text"
+             rows={1}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -254,20 +271,37 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
               }
             }}
           />
-
+            <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "flex-end", // ⬅ button goes to bottom
+      alignSelf: "stretch",       // ⬅ wrapper matches parent height
+    }}
+  >
           <Button
             variant="contained"
             onClick={handleSubmit}
             style={{
-              right: "10px",
-              position: "absolute",
-              bottom: "7px",
-              backgroundColor: "black",
+              display:"flex",
+              justifyContent:"center",
+            
+              
+              backgroundColor: "white",
+              borderRadius:"30px",
+              padding:"5px",
+              marginBottom:"0px",
+              minWidth:"40px",
+              minHeight: "40px"
+             
             }}
           >
-            Submit
+           <ArrowUpwardIcon sx={{ fontSize: 25, color: "black", fill:"black" }} />
+
           </Button>
+          </div>
         </div>
+        
       </div>
     </div>
   );

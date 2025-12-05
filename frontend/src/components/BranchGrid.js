@@ -9,9 +9,9 @@ const ROW_HEIGHT = 100;   // distance between rows (y)
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
 
-export default function BranchGrid({ chats, onSelectChat,  onNewRootChat }) {
+export default function BranchGrid({ chats, onSelectChat,  onNewRootChat, isInChatType }) {
   // --- DRAGGING / PANNING ---
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [offset, setOffset] = useState({ x: 500, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
   const lastPosRef = useRef({ x: 0, y: 0 });
 
@@ -22,7 +22,7 @@ export default function BranchGrid({ chats, onSelectChat,  onNewRootChat }) {
     lastPosRef.current = { x: e.clientX, y: e.clientY };
   };
   
-
+  
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDragging) return;
@@ -174,7 +174,7 @@ const { nodes, edges } = useMemo(() => {
     >
 
             {/* New root chat button */}
-      {onNewRootChat && (
+      {onNewRootChat && isInChatType == "grid" &&(
         <Button
           variant="contained"
           size="small"
@@ -192,7 +192,7 @@ const { nodes, edges } = useMemo(() => {
             backgroundColor: "#3b3b3b",
           }}
         >
-          New root chat
+          <p>New root chat</p>
         </Button>
       )}
 
@@ -249,8 +249,8 @@ const { nodes, edges } = useMemo(() => {
     statusMessage = "Healthy: Accurate responses";
   } else if (remaining >= 30) {
     statusMessage = "Consider new Chat";
-  } else if (remaining >= 15) {
-    statusMessage = "UnHealthy: Turnication will be";
+  } else if (remaining >= 0) {
+    statusMessage = "UnHealthy: Turnication Activated";
   } else {
     statusMessage = "Critical context level! Summarize or start a new branch.";
   }
@@ -305,7 +305,7 @@ const { nodes, edges } = useMemo(() => {
             height: "100%",
             backgroundColor: barColor,
             transition: "width 0.3s ease",
-            padding: "20px"
+            padding: "5px"
           }}
         />
       </div>

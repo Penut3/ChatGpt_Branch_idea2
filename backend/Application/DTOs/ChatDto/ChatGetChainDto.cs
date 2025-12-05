@@ -15,6 +15,7 @@ namespace Application.DTOs.ChatDto
         public Guid? ParentChatId { get; set; }
         public Guid? RootChatId { get; set; }
         public double? ContextUsed { get; set; }
+        public Guid? GridId { get; set; }
 
         public DateTime CreatedAt { get; set; }
 }
