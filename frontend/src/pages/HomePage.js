@@ -32,7 +32,7 @@ export default function HomePage() {
   const BACKEND_URL =
   process.env.NODE_ENV === "development"
     ? "https://localhost:7151/api/"
-    : "https://backend-test-bxfqebacdegzgdcw.westeurope-01.azurewebsites.net";
+    : "https://backend-test-bxfqebacdegzgdcw.westeurope-01.azurewebsites.net/api/";
 
 
 
