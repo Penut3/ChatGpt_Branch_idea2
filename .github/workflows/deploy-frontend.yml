@@ -14,7 +14,7 @@ env:
   FRONTEND_PATH: 'frontend'
   PUBLISH_OUTPUT: '${{ github.workspace }}/publish-output'
   # DOTNET_VERSION: '8.0.x'
-  NODE_VERSION: '20.19.0'
+  NODE_VERSION: '24'
   CI: false
 
 permissions:
@@ -74,7 +74,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-artifact
-          path: '${{ env.FRONTEND_PATH }}/dist'
+          # path: '${{ env.FRONTEND_PATH }}/dist' for vite
+          path: '${{ env.FRONTEND_PATH }}/build'
           retention-days: 1
 
   deploy:
@@ -93,9 +94,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-artifact
-          path: '${{ env.FRONTEND_PATH }}/dist'
+          # path: '${{ env.FRONTEND_PATH }}/dist' for vite
+          path: '${{ env.FRONTEND_PATH }}/build'
 
-      - name: Azure Login (OIDC)
+      - name: Azure Login (OIDC)build
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -115,6 +117,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "${{ env.FRONTEND_PATH }}/dist"
+          # app_location: "${{ env.FRONTEND_PATH }}/dist" for vite
+          app_location: "${{ env.FRONTEND_PATH }}/build"
           skip_app_build: true
           skip_api_build: true
