@@ -9,11 +9,11 @@ on:
   workflow_dispatch:
 
 env:
-  # AZURE_WEBAPP_NAME: 'primotolk-api'
-  # BACKEND_PATH: 'backend/Presentation'
+  AZURE_WEBAPP_NAME: 'backend-test'
+  BACKEND_PATH: 'backend/WebProject1_Api'
   FRONTEND_PATH: 'frontend'
   PUBLISH_OUTPUT: '${{ github.workspace }}/publish-output'
-  # DOTNET_VERSION: '8.0.x'
+  DOTNET_VERSION: '8.0.x'
   NODE_VERSION: '24'
   CI: false
 
@@ -37,20 +37,20 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      # - name: Setup .NET ${{ env.DOTNET_VERSION }}
-      #   uses: actions/setup-dotnet@v4
-      #   with:
-      #     dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      # - name: Build Backend
-      #   run: |
-      #     dotnet restore ${{ env.BACKEND_PATH }}
-      #     dotnet build ${{ env.BACKEND_PATH }} --configuration Release --no-restore
-      #     dotnet publish ${{ env.BACKEND_PATH }} \
-      #       -c Release \
-      #       -o ${{ env.PUBLISH_OUTPUT }} \
-      #       --no-build \
-      #       -p:Version=${{ github.run_id }}
+      - name: Build Backend
+        run: |
+          dotnet restore ${{ env.BACKEND_PATH }}
+          dotnet build ${{ env.BACKEND_PATH }} --configuration Release --no-restore
+          dotnet publish ${{ env.BACKEND_PATH }} \
+            -c Release \
+            -o ${{ env.PUBLISH_OUTPUT }} \
+            --no-build \
+            -p:Version=${{ github.run_id }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -63,12 +63,12 @@ jobs:
           npm ci
           GENERATE_SOURCEMAP=false npm run build
 
-      # - name: Upload backend artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: backend-artifact
-      #     path: ${{ env.PUBLISH_OUTPUT }}
-      #     retention-days: 1
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-artifact
+          path: ${{ env.PUBLISH_OUTPUT }}
+          retention-days: 1
 
       - name: Upload frontend artifact
         uses: actions/upload-artifact@v4
@@ -84,11 +84,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-      # - name: Download backend artifact
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: backend-artifact
-      #     path: ${{ env.PUBLISH_OUTPUT }}
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-artifact
+          path: ${{ env.PUBLISH_OUTPUT }}
 
       - name: Download frontend artifact
         uses: actions/download-artifact@v4
@@ -104,12 +104,12 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # - name: Deploy Backend
-      #   uses: azure/webapps-deploy@v3
-      #   with:
-      #     app-name: ${{ env.AZURE_WEBAPP_NAME }}
-      #     slot-name: Production
-      #     package: ${{ env.PUBLISH_OUTPUT }}
+      - name: Deploy Backend
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: Production
+          package: ${{ env.PUBLISH_OUTPUT }}
 
       - name: Deploy Frontend
         uses: Azure/static-web-apps-deploy@v1
