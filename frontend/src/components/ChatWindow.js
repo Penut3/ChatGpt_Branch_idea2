@@ -5,7 +5,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import TurnLeftIcon from "@mui/icons-material/TurnLeft";
 import Tooltip from "@mui/material/Tooltip";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { materialOceanic } from "react-syntax-highlighter/dist/esm/styles/prism";
+// import { materialOceanic } from "react-syntax-highlighter/dist/esm/styles/prism";
 import IconButton from "@mui/material/IconButton";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
@@ -86,7 +86,7 @@ const CodeBlock = ({ node, inline, className, children, ...props }) => {
 
       {/* Code box */}
       <SyntaxHighlighter
-        style={materialOceanic}
+        // style={materialOceanic}
         language={language}
         PreTag="div"
         customStyle={{
