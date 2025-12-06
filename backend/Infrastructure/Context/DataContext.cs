@@ -22,7 +22,7 @@ public class DataContext : DbContext
             .HasOne(c => c.ParentChat)
             .WithMany(c => c.ChildChats)
             .HasForeignKey(c => c.ParentChatId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Grid 1 -> many chats
         modelBuilder.Entity<Grid>()
