@@ -106,7 +106,8 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddSingleton<ChatClient>(_ =>
 {
     return new ChatClient(
-        model: "deepseek/DeepSeek-V3-0324",                               // same as in your Node app
+       /* model: "deepseek/DeepSeek-V3-0324", */
+       model: "meta/Llama-4-Scout-17B-16E-Instruct",
         credential: new ApiKeyCredential(githubToken),
         options: new OpenAIClientOptions
         {
