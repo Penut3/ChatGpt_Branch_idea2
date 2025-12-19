@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs.ChatDto
 {
-    public class ChatCreateDto
+    public sealed record ChatCreateDto
     {
         public string UserRequest { get; set; }
 
