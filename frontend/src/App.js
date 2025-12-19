@@ -10,11 +10,11 @@ function App() {
         {/* Chat list / landing */}
         <Route path="/" element={<HomePage />} />
 
-        {/* Single chat */}
-        <Route path="/chat/:chatId" element={<HomePage />} />
+        {/* Grid view with gridId */}
+        <Route path="/grid/:gridId" element={<HomePage />} />
 
-        {/* Grid view – param can be a gridId OR a rootChatId */}
-        <Route path="/grid/:gridOrRootId" element={<HomePage />} />
+        {/* Chat view with gridId and chatId */}
+        <Route path="/chat/:gridId/:chatId" element={<HomePage />} />
       </Routes>
     </BrowserRouter>
   );
