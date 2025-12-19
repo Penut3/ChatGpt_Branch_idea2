@@ -6,6 +6,7 @@ using Domain.Helpers;
 
 using Infrastructure.Configuration;
 using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,7 +53,8 @@ namespace Infrastructure
             services.AddScoped<GridService>();
 
             services.AddScoped<IAiChatService, AiChatService>();
-           
+            services.AddScoped<ISupabaseService, SupabaseService>();
+
             //services.AddScoped<IJwtService, JwtService>();
 
             return services;

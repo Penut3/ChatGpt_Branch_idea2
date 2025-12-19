@@ -24,6 +24,7 @@ namespace API.Controllers
         }
 
         [HttpGet("all")]
+        [Authorize]
         public async Task<IActionResult> GetChats()
         {
             var res = await _chatService.GetAllChats();

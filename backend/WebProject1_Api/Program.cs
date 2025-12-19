@@ -27,7 +27,7 @@ builder.Services.AddApplication();
 //builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
 // Add authentication & authorization
-//builder.Services.AddUserValidation();
+builder.Services.AddUserValidation();
 
 //builder.Services.AddAuthorization(options =>
 //{
