@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Application.DTOs.ChatModelDto
 {
-    public class ChatModelCreateDto
+    public sealed record ChatModelCreateDto
     {
         public string Name { get; set; }
 

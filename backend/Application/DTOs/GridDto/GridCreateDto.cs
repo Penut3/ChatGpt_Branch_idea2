@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs.GridDto
 {
-    public class GridCreateDto
+    public sealed record GridCreateDto
     {
         public string? Name { get; set; }
     }

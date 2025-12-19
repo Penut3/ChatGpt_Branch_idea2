@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs.ChatDto
 {
-    public class ChatGetHeaderDto
+    public sealed record ChatGetHeaderDto
     {
         public Guid Id { get; set; }
         public string ChatTitle { get; set; }
