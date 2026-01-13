@@ -7,6 +7,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ChatController : ControllerBase
     {
         private readonly IChatService _chatService;
@@ -17,6 +18,7 @@ namespace API.Controllers
         }
 
         [HttpPost("CreateChat")]
+        [Authorize]
         public async Task<IActionResult> CreateChat([FromBody] ChatCreateDto chatCreateDto) 
         {
             var res = await _chatService.CreateChat(chatCreateDto);

@@ -11,6 +11,7 @@ using System.ClientModel;
 using System;
 //using Presentation.Identity;
 using System.Security.Claims;
+using Presentation.Identity;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +25,8 @@ builder.Services.AddHttpClient(); // must be before SupabaseAuthServic
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
-//builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+
 
 // Add authentication & authorization
 builder.Services.AddUserValidation();
