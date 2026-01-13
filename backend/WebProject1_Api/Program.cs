@@ -16,7 +16,7 @@ using System.Security.Claims;
 var builder = WebApplication.CreateBuilder(args);
 
 // Load environment variables from .env
-Env.Load("C:\\Users\\sande\\Documents\\GitHub\\ChatGPT_Branch_Concept2\\backend\\.env");
+Env.Load("../.env");
 var githubToken = Environment.GetEnvironmentVariable("GITHUB_MODELS_TOKEN");
 
 // Register infrastructure + application layers
