@@ -28,6 +28,7 @@ input:focus{
 }
 
 /* Also removes fade animation */
+
 .MuiTouchRipple-child {
   animation: none !important;
 }
