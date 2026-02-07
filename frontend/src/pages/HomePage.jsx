@@ -23,10 +23,9 @@ export default function HomePage() {
   const [gridChats, setGridChats] = useState([]);
   const [selectedGridId, setSelectedGridId] = useState(null);
 
-  const BACKEND_URL =
-    process.env.NODE_ENV === "development"
-      ? "https://localhost:7151/api/"
-      : "https://backend-test-bxfqebacdegzgdcw.westeurope-01.azurewebsites.net/api/";
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
+
+ 
 
   // =====================
   // INITIAL LOAD based on URL params
@@ -60,6 +59,7 @@ export default function HomePage() {
       const res = await fetch(`${BACKEND_URL}grid/all`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
 
       const list = await res.json();
@@ -79,6 +79,7 @@ export default function HomePage() {
       const res = await fetch(`${BACKEND_URL}chat/grid/${gId}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
 
       const data = await res.json();
@@ -132,6 +133,7 @@ export default function HomePage() {
       const res = await fetch(`${BACKEND_URL}chat/${cId}`, {
         method: "GET",
         headers:  { "Content-Type": "application/json" },
+        credentials: "include",
       });
 
       const chain = await res.json();
@@ -161,6 +163,7 @@ export default function HomePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: gridName }),
+        credentials: "include"
       });
 
       if (! res.ok) {
@@ -237,6 +240,7 @@ export default function HomePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        credentials: "include",
       });
 
       const created = await res.json();

@@ -43,5 +43,8 @@ public class DataContext : DbContext
         // ✅ Global query filter
         modelBuilder.Entity<Chat>()
             .HasQueryFilter(c => !_currentUserId.HasValue || c.Createdby == _currentUserId);
+
+        modelBuilder.Entity<Grid>()
+          .HasQueryFilter(c => !_currentUserId.HasValue || c.UserId == _currentUserId);
     }
 }

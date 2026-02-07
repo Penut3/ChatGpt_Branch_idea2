@@ -10,5 +10,6 @@ namespace Domain.Entities
     {
         public string? Name { get; set; }
         public ICollection<Chat> Chats { get; set; } = new List<Chat>();
+        public Guid? UserId { get; set; }
     }
 }

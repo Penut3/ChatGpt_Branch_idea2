@@ -174,7 +174,7 @@ const { nodes, edges } = useMemo(() => {
     >
 
             {/* New root chat button */}
-      {onNewRootChat && isInChatType == "grid" &&(
+      {/* {onNewRootChat && isInChatType == "grid" &&(
         <Button
           variant="contained"
           size="small"
@@ -194,7 +194,28 @@ const { nodes, edges } = useMemo(() => {
         >
           <p>New root chat</p>
         </Button>
-      )}
+      )} */}
+       
+        <Button
+          variant="contained"
+          size="small"
+          onMouseDown={(e) => e.stopPropagation()}   // 👈 prevent panning
+          onClick={(e) => {
+            e.stopPropagation();
+            onNewRootChat();
+          }}
+          style={{
+            position: "absolute",
+            padding: "10px",
+            top: 20,
+            left: 380,
+            zIndex: 2000,
+            backgroundColor: "#3b3b3b",
+          }}
+        >
+          <p>New root chat</p>
+        </Button>
+      
 
       {/* Inner world that moves with offset */}
       <div

@@ -13,10 +13,11 @@ namespace Application.Services
     public class GridService : IGridService
     {
         private readonly IBaseRepository<Grid> _gridRepo;
-
-        public GridService(IBaseRepository<Grid> gridRepo)
+        private readonly Guid? _currentUserId;
+        public GridService(IBaseRepository<Grid> gridRepo, ICurrentUser currentUser)
         {
             _gridRepo = gridRepo;
+            _currentUserId = currentUser.UserId;
         }
 
         public async Task<IEnumerable <Grid>> GetGridAll()
@@ -27,9 +28,11 @@ namespace Application.Services
 
         public async Task<Grid> CreateGrid(GridCreateDto gridCreateDto)
         {
+
             var grid = new Grid
             {
-                Name = gridCreateDto.Name
+                Name = gridCreateDto.Name,
+                UserId = _currentUserId
             };
             await _gridRepo.Add(grid);
             return grid;

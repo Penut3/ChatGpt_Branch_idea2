@@ -1,0 +1,38 @@
+
+
+.login-form{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    background-color: rgb(209, 208, 208);
+    width: 100vw;
+    max-width: 500px;
+}
+
+
+
+/* LoginForm.css */
+.small-text-field {
+    width: 100%;
+  
+}
+
+/* Input text */
+.small-text-field input {
+    font-size: 10px; /* smaller text */
+    color: black; /* text color */
+}
+
+/* Label */
+.small-text-field label {
+    font-size: 12px;
+    transform: translate(14px, 14px) scale(1); /* normal position */
+    transition: all 0.2s ease-in-out; /* smooth animation */
+}
+
+.small-text-field .MuiInputLabel-shrink {
+    transform: translate(14px, -5px) scale(0.75); /* move up less */
+}
+
+

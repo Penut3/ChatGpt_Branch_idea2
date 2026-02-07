@@ -34,6 +34,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{id:Guid}")]
+        [Authorize]
         public async Task<IActionResult> GetChatById(Guid id)
         {
             var res = await _chatService.GetChatById(id);

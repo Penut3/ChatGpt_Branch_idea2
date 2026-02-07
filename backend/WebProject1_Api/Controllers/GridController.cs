@@ -7,6 +7,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class GridController : ControllerBase
     {
         private readonly IGridService _gridService;
