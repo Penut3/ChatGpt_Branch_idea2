@@ -18,7 +18,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Load environment variables from .env
 Env.Load("../.env");
-var githubToken = Environment.GetEnvironmentVariable("GITHUB_MODELS_TOKEN");
+//var githubToken = Environment.GetEnvironmentVariable("GITHUB_MODELS_TOKEN");
+var AiApiToken = Environment.GetEnvironmentVariable("GPT_SECRET");
 
 // Register infrastructure + application layers
 builder.Services.AddHttpClient(); // must be before SupabaseAuthServic
@@ -109,12 +110,13 @@ builder.Services.AddSingleton<ChatClient>(_ =>
 {
     return new ChatClient(
        /* model: "deepseek/DeepSeek-V3-0324", */
-       model: "meta/Llama-4-Scout-17B-16E-Instruct",
-        credential: new ApiKeyCredential(githubToken),
+       model: "gpt-5-nano",
+        credential: new ApiKeyCredential(AiApiToken),
         options: new OpenAIClientOptions
         {
-            Endpoint = new Uri("https://models.github.ai/inference")
+            Endpoint = new Uri("https://api.openai.com/v1")
         });
+
 });
 
 // Configure CORS

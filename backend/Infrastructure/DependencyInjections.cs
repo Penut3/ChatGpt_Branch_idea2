@@ -54,6 +54,7 @@ namespace Infrastructure
 
             services.AddScoped<IAiChatService, AiChatService>();
             services.AddScoped<ISupabaseService, SupabaseService>();
+            services.AddScoped<IMailgunService, MailgunService>();
 
             //services.AddScoped<IJwtService, JwtService>();
 
