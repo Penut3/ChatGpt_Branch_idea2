@@ -24,7 +24,7 @@ namespace Presentation.Controllers
         }
 
 
-        [HttpPost("register")]
+        [HttpPost("signup")]
         [AllowAnonymous]
         public async Task<ActionResult<User?>> Register([FromBody] UserCreateDto userRegisterDto)
         {
