@@ -40,7 +40,7 @@ public static class Configuration
 
                 ValidateAudience = true,
                 ValidAudience = audience,
-                ValidAudiences = new[] { "authenticated", "https://primocommunication.no" },
+                ValidAudiences = new[] { "authenticated" },
 
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero,
@@ -80,18 +80,13 @@ public sealed class SupabaseClaimsTransformation : IClaimsTransformation
 {
     public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
     {
-        if (principal.Identity is not ClaimsIdentity id) return Task.FromResult(principal);
+        if (principal.Identity is not ClaimsIdentity id)
+            return Task.FromResult(principal);
 
-        // map raw "email" → ClaimTypes.Email (if present & not already mapped)
-        var rawEmail = id.FindFirst("email")?.Value;
-        if (!string.IsNullOrWhiteSpace(rawEmail) &&
-            !id.Claims.Any(c => c.Type == ClaimTypes.Email))
-        {
-            id.AddClaim(new Claim(ClaimTypes.Email, rawEmail));
-        }
-        // Parse app_metadata JSON once
+        // app_metadata is a single JSON claim from Supabase
         var metaJson = id.FindFirst("app_metadata")?.Value;
-        if (string.IsNullOrWhiteSpace(metaJson)) return Task.FromResult(principal);
+        if (string.IsNullOrWhiteSpace(metaJson))
+            return Task.FromResult(principal);
 
         try
         {
@@ -99,48 +94,38 @@ public sealed class SupabaseClaimsTransformation : IClaimsTransformation
             var root = doc.RootElement;
 
             // roles → ClaimTypes.Role
-            if (!id.Claims.Any(c => c.Type == ClaimTypes.Role) &&
-                root.TryGetProperty("roles", out var roles) &&
-                roles.ValueKind == JsonValueKind.Array)
+            if (root.TryGetProperty("roles", out var rolesProp) &&
+                rolesProp.ValueKind == JsonValueKind.String)
             {
-                foreach (var r in roles.EnumerateArray())
+                var role = rolesProp.GetString();
+                if (!string.IsNullOrWhiteSpace(role) &&
+                    !id.HasClaim(ClaimTypes.Role, role))
                 {
-                    var role = r.GetString();
-                    if (!string.IsNullOrWhiteSpace(role))
-                        id.AddClaim(new Claim(ClaimTypes.Role, role));
+                    id.AddClaim(new Claim(ClaimTypes.Role, role));
                 }
             }
 
-            // businesses → "Business"
-            if (root.TryGetProperty("businesses", out var businesses) && 
-                businesses.ValueKind == JsonValueKind.Array)
+            // dbUserId → "dbUserId" claim (and optionally NameIdentifier)
+            if (root.TryGetProperty("dbUserId", out var dbUserIdProp) &&
+                dbUserIdProp.ValueKind == JsonValueKind.String)
             {
-                // avoid duplicates
-                var existing = new HashSet<string>(
-                    id.FindAll("Business").Select(c => c.Value),
-                    StringComparer.OrdinalIgnoreCase);
+                var dbUserId = dbUserIdProp.GetString();
 
-                foreach (var b in businesses.EnumerateArray())
+                if (!string.IsNullOrWhiteSpace(dbUserId))
                 {
-                    var name = b.GetString();
-                    if (!string.IsNullOrWhiteSpace(name) && !existing.Contains(name))
-                        id.AddClaim(new Claim("Business", name));
+                    // Custom claim you read in the controller
+                    if (!id.HasClaim("dbUserId", dbUserId))
+                        id.AddClaim(new Claim("dbUserId", dbUserId));
+
+                    // OPTIONAL: also expose it as NameIdentifier if you like
+                    if (!id.HasClaim(ClaimTypes.NameIdentifier, dbUserId))
+                        id.AddClaim(new Claim(ClaimTypes.NameIdentifier, dbUserId));
                 }
             }
-
-            //dbUserId claim
-            if (!id.Claims.Any(c => c.Type == "dbUserId") &&
-                 root.TryGetProperty("dbUserId", out var userIdEl) &&
-                 userIdEl.ValueKind == JsonValueKind.String &&
-                 Guid.TryParse(userIdEl.GetString(), out var guid))
-            {
-                id.AddClaim(new Claim("dbUserId", guid.ToString("D")));
-            }
-
         }
         catch
         {
-            // ignore JSON parse errors
+            // ignore JSON errors, don't break auth
         }
 
         return Task.FromResult(principal);

@@ -19,23 +19,25 @@ namespace Application.Services
         private readonly IBaseRepository<ChatModel> _chatModelRepo;
         private readonly IAiChatService _aiChatService;
         private readonly ILogger<ChatService> _logger;
+        private readonly Guid? _currentUserId;
 
-        public ChatService(IBaseRepository<Chat> chatRepo, IBaseRepository<ChatModel> chatModelRepo, IAiChatService aiChatService, ILogger<ChatService> logger)
+        public ChatService(IBaseRepository<Chat> chatRepo, IBaseRepository<ChatModel> chatModelRepo, IAiChatService aiChatService, ILogger<ChatService> logger, ICurrentUser currentUser)
         {
             _chatRepo = chatRepo;
             _chatModelRepo = chatModelRepo;
             _aiChatService = aiChatService;
             _logger = logger;
+            _currentUserId = currentUser.UserId;
         }
         
        public async Task<Chat> CreateChat(ChatCreateDto chatCreateDto)
         {
 
             var messages = new List<AiMessage>
-    {
-        new AiMessage { Role = AiMessageRole.System, Content = "You are a helpful assistant." + "When you include code, use fenced code blocks with language tags " +
-        "like ```python or ```csharp."}
-    };
+            {
+                new AiMessage { Role = AiMessageRole.System, Content = "You are a helpful assistant." + "When you include code, use fenced code blocks with language tags " +
+                "like ```python or ```csharp."}
+            };
 
             _logger.LogInformation("🧱 Added system prompt message.");
 
@@ -83,7 +85,7 @@ namespace Application.Services
             var testModelId = Guid.Parse("866993a1-ffda-4124-8d3e-b389ae3c06fc");
             var model = await _chatModelRepo.GetById(testModelId);
             var MaxContextWindowTokens = model.ContextWindowTokens;
-            var MaxContextWindowCharacters = MaxContextWindowTokens * 3; // Rough estimate: 1 token ~ 4 characters
+            var MaxContextWindowCharacters = MaxContextWindowTokens * 3; // Rough estimate: 1 token ~ 4 characters. Should find a better way to calculate tokens
 
             _logger.LogInformation("MaxContextWindow Characters: {MaxContextWindowCharacters}", MaxContextWindowCharacters);
 
@@ -176,7 +178,7 @@ namespace Application.Services
                     GridId = chatCreateDto.GridId,
                     Response = aiResponse,
                     ContextUsed = usedContextWindowPercentage,
-                    Createdby = null,
+                    Createdby = _currentUserId,
                     CreatedAt = DateTime.UtcNow,
                     ChatModelId = testModelId,
                 };

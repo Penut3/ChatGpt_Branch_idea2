@@ -11,23 +11,26 @@ using System.ClientModel;
 using System;
 //using Presentation.Identity;
 using System.Security.Claims;
+using Presentation.Identity;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Load environment variables from .env
-Env.Load("C:\\Users\\sande\\Documents\\GitHub\\ChatGPT_Branch_Concept2\\backend\\.env");
-var githubToken = Environment.GetEnvironmentVariable("GITHUB_MODELS_TOKEN");
+Env.Load("../.env");
+//var githubToken = Environment.GetEnvironmentVariable("GITHUB_MODELS_TOKEN");
+var AiApiToken = Environment.GetEnvironmentVariable("GPT_SECRET");
 
 // Register infrastructure + application layers
 builder.Services.AddHttpClient(); // must be before SupabaseAuthServic
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
-//builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+
 
 // Add authentication & authorization
-//builder.Services.AddUserValidation();
+builder.Services.AddUserValidation();
 
 //builder.Services.AddAuthorization(options =>
 //{
@@ -107,12 +110,13 @@ builder.Services.AddSingleton<ChatClient>(_ =>
 {
     return new ChatClient(
        /* model: "deepseek/DeepSeek-V3-0324", */
-       model: "meta/Llama-4-Scout-17B-16E-Instruct",
-        credential: new ApiKeyCredential(githubToken),
+       model: "gpt-5-nano",
+        credential: new ApiKeyCredential(AiApiToken),
         options: new OpenAIClientOptions
         {
-            Endpoint = new Uri("https://models.github.ai/inference")
+            Endpoint = new Uri("https://api.openai.com/v1")
         });
+
 });
 
 // Configure CORS

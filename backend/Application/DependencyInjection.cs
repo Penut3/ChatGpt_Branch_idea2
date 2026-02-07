@@ -14,6 +14,7 @@ namespace Application
             services.AddTransient<IChatService, ChatService>();
             services.AddTransient<IChatModelService, ChatModelService>();
             services.AddTransient<IGridService, GridService>();
+            services.AddTransient<IUserService, UserService>();
             return services;
         }
 

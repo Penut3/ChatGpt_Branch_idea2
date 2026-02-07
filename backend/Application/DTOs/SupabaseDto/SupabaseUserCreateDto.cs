@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Application.DTOs.SupabaseDto
 {
-    public class User : BaseEntity
+    public sealed record SupabaseCreateUserDto
     {
+        public Guid UserId { get; set; }
         public string Email { get; set; } = null!;
-        public string SupabaseId { get; set; }
+        public string Password { get; set; } = null!;
+
     }
 }
