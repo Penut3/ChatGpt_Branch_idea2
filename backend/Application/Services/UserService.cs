@@ -18,11 +18,13 @@ namespace Application.Services
     {
         private readonly IBaseRepository<User> _userRepo;
         private readonly ISupabaseService _supabaseService;
+        private readonly IMailgunService _mailgunService;
 
-        public UserService(IBaseRepository<User> userRepo, ISupabaseService supabaseService)
+        public UserService(IBaseRepository<User> userRepo, ISupabaseService supabaseService, IMailgunService mailgunService )
         {
             _userRepo = userRepo;
             _supabaseService = supabaseService;
+            _mailgunService = mailgunService;
         }
 
         public async Task<User?> RegisterUser(UserCreateDto userDto)
