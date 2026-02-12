@@ -54,16 +54,26 @@ namespace Infrastructure.Services
         }
 
 
-        public async Task<MailgunResultDto> VerifyEmail(string verificationCode)
+        public async Task<MailgunResultDto> SendVerificationEmail(string email, string verificationCode)
         {
             var request = new RestRequest($"/v3/{_mailgunDomain}/messages", Method.Post);
             request.AlwaysMultipartFormData = true;
-            request.AddParameter("from", $"Mailgun Sandbox <postmaster@{_mailgunDomain}>");
-            request.AddParameter("to", $"S J <{_email}>");
+            request.AddParameter("from", $"{_mailgunDomain} <postmaster@{_mailgunDomain}>");
+            request.AddParameter("to", $"S J <{email}>");
             request.AddParameter("subject", "Verfication code");
-            request.AddParameter("text", "Your verification code: ");
+            request.AddParameter("text", $"Your verification code is: {verificationCode}");
 
             var response = await _client.ExecuteAsync(request);
+
+            if (!response.IsSuccessful)
+            {
+                throw new HttpRequestException(
+                    $"Mailgun failed with status {response.StatusCode}. Response: {response.Content}",
+                    null,
+                    response.StatusCode
+                );
+
+            }
 
             return new MailgunResultDto
             {
@@ -72,6 +82,7 @@ namespace Infrastructure.Services
                 Message = response.Content
             };
         }
+
 
     }
 }

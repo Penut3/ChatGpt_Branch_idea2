@@ -12,6 +12,6 @@ namespace Application.Interfaces.Services
     {
         Task<MailgunResultDto> SendAsync();
 
-        Task<MailgunResultDto> VerifyEmail(string verificationCode);
+        Task<MailgunResultDto> SendVerificationEmail(string email, string verificationCode);
     }
 }

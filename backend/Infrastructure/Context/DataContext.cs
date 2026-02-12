@@ -16,6 +16,7 @@ public class DataContext : DbContext
     public DbSet<Chat> Chats { get; set; }
     public DbSet<ChatModel> ChatModels { get; set; }
     public DbSet<Grid> Grids { get; set; }
+    public DbSet<EmailVerification> EmailVerifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

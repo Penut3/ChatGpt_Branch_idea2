@@ -1,4 +1,5 @@
-﻿using Application.DTOs.UserDto;
+﻿using Application.DTOs.EmailVerificationDto;
+using Application.DTOs.UserDto;
 using Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,8 @@ namespace Application.Interfaces.Services
 {
     public interface IUserService
     {
-        Task<User?> RegisterUser(UserCreateDto userDto);
+        Task<EmailVerificationResultDto> RegisterUser(UserCreateDto userDto);
         Task<UserLoginResultDto> LoginAsync(UserLoginDto loginDto);
+        Task<User?> VerifyEmail(EmailVerificationVerifyDto verifyDto);
     }
 }
