@@ -11,5 +11,7 @@ namespace Application.Interfaces.Services
     public interface IMailgunService
     {
         Task<MailgunResultDto> SendAsync();
+
+        Task<MailgunResultDto> SendVerificationEmail(string email, string verificationCode);
     }
 }

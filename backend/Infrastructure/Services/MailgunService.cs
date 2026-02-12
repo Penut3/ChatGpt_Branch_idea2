@@ -2,6 +2,7 @@ using Application.DTOs.MailgunDto;
 using Application.Interfaces.Services;
 using RestSharp;
 using RestSharp.Authenticators;
+using System.Security;
 
 namespace Infrastructure.Services
 {
@@ -9,42 +10,40 @@ namespace Infrastructure.Services
     {
         private readonly string _mailgunUrl;
         private readonly string _email;
+        private readonly string _mailgunDomain;
+        private readonly string _mailgunApiKey;
+        private readonly RestClient _client;
 
         public MailgunService() {
             _mailgunUrl = Environment.GetEnvironmentVariable("MAILGUN_URL");
             _email = Environment.GetEnvironmentVariable("EMAIL");
+            _mailgunDomain = Environment.GetEnvironmentVariable("MAILGUN_DOMAIN");
+            _mailgunApiKey = Environment.GetEnvironmentVariable("MAILGUN_API_KEY");
+
+            var options = new RestClientOptions($"{_mailgunUrl}")
+            {
+                Authenticator = new HttpBasicAuthenticator(
+                 "api", $"{_mailgunApiKey}"
+
+               )
+            };
+            _client = new RestClient(options);
+
         }
+
+   
 
         public async Task<MailgunResultDto> SendAsync()
         {
-            var options = new RestClientOptions("https://api.mailgun.net")
-            {
-                Authenticator = new HttpBasicAuthenticator(
-                    "api",
-                    Environment.GetEnvironmentVariable("MAILGUN_API_KEY")
-                )
-            };
 
-            var client = new RestClient(options);
-
-
-            //var request = new RestRequest(
-            //    $"/v3/{_mailgunUrl}/messages",
-            //    Method.Post
-            //);
-
-            var request = new RestRequest("/v3/sandbox77b6cd64d51845daa1feb57e7d81349a.mailgun.org/messages", Method.Post);
-
+            var request = new RestRequest($"/v3/{_mailgunDomain}/messages", Method.Post);
             request.AlwaysMultipartFormData = true;
-            request.AddParameter(
-                 "from",
-                 "Mailgun Sandbox <postmaster@sandbox77b6cd64d51845daa1feb57e7d81349a.mailgun.org>"
-             );
+            request.AddParameter("from", $"Mailgun Sandbox <postmaster@{_mailgunDomain}>");
             request.AddParameter("to", $"S J <{_email}>");
             request.AddParameter("subject", "Hello S J");
-            request.AddParameter("text", "Congratulations...");
+            request.AddParameter("text", "Congratulations S J, you just sent an email with Mailgun! You are truly awesome!");
 
-            var response = await client.ExecuteAsync(request);
+            var response = await _client.ExecuteAsync(request);
 
             return new MailgunResultDto
             {
@@ -53,5 +52,37 @@ namespace Infrastructure.Services
                 Message = response.Content
             };
         }
+
+
+        public async Task<MailgunResultDto> SendVerificationEmail(string email, string verificationCode)
+        {
+            var request = new RestRequest($"/v3/{_mailgunDomain}/messages", Method.Post);
+            request.AlwaysMultipartFormData = true;
+            request.AddParameter("from", $"{_mailgunDomain} <postmaster@{_mailgunDomain}>");
+            request.AddParameter("to", $"S J <{email}>");
+            request.AddParameter("subject", "Verfication code");
+            request.AddParameter("text", $"Your verification code is: {verificationCode}");
+
+            var response = await _client.ExecuteAsync(request);
+
+            if (!response.IsSuccessful)
+            {
+                throw new HttpRequestException(
+                    $"Mailgun failed with status {response.StatusCode}. Response: {response.Content}",
+                    null,
+                    response.StatusCode
+                );
+
+            }
+
+            return new MailgunResultDto
+            {
+                IsSuccess = response.IsSuccessful,
+                StatusCode = (int)response.StatusCode,
+                Message = response.Content
+            };
+        }
+
+
     }
 }

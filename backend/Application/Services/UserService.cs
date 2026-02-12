@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.SupabaseDto;
 using Application.DTOs.UserDto;
+using Application.DTOs.EmailVerificationDto;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Entities;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,29 +19,116 @@ namespace Application.Services
     public class UserService : IUserService
     {
         private readonly IBaseRepository<User> _userRepo;
+        private readonly IBaseRepository<EmailVerification> _emailVerificationRepo;
         private readonly ISupabaseService _supabaseService;
+        private readonly IMailgunService _mailgunService;
 
-        public UserService(IBaseRepository<User> userRepo, ISupabaseService supabaseService)
+        public UserService(IBaseRepository<User> userRepo, IBaseRepository<EmailVerification> emailVerificationRepo, ISupabaseService supabaseService, IMailgunService mailgunService )
         {
             _userRepo = userRepo;
+            _emailVerificationRepo = emailVerificationRepo;
             _supabaseService = supabaseService;
+            _mailgunService = mailgunService;
         }
 
-        public async Task<User?> RegisterUser(UserCreateDto userDto)
+        //public async Task<User?> RegisterUser1(UserCreateDto userDto)
+        //{
+        //    var dbUserName = Guid.NewGuid();
+        //    var supabaseUser = await _supabaseService.CreateAuthUserAsync(new SupabaseCreateUserDto
+        //    {
+        //        Email = userDto.Email,
+        //        Password = userDto.Password,
+        //        UserId = dbUserName,
+        //    });
+
+        //    var user = new User
+        //    {
+        //        Id = dbUserName,
+        //        Email = userDto.Email,
+        //        SupabaseId = supabaseUser.Id,
+        //        CreatedAt = DateTime.UtcNow,
+        //        IsDeleted = false
+
+        //    };
+        //    await _userRepo.Add(user);
+        //    return user;
+        //}
+
+        public async Task<EmailVerificationResultDto> RegisterUser(UserCreateDto userDto)
         {
-            var dbUserName = Guid.NewGuid();
-            var supabaseUser = await _supabaseService.CreateAuthUserAsync(new SupabaseCreateUserDto
+
+            // need logic here to check if both User.Email and supabaseUser.Email exists.
+            var userId = Guid.NewGuid();
+
+            var supabaseUser = await _supabaseService.CreateAuthUserAsync(
+                new SupabaseCreateUserDto
+                {
+                    Email = userDto.Email,
+                    Password = userDto.Password,
+                    UserId = userId
+                });
+                
+            // 1️⃣ Generate 6-digit verification code
+            var verificationCode = RandomNumberGenerator
+                    .GetInt32(100000, 999999)
+                    .ToString(); ;
+
+            // 2️⃣ Hash it using BCrypt
+            var codeHash = BCrypt.Net.BCrypt.HashPassword(verificationCode);
+
+            var emailVerification = new EmailVerification
             {
+                Id = Guid.NewGuid(),
+                UserId = userId,
                 Email = userDto.Email,
-                Password = userDto.Password,
-                UserId = dbUserName,
-            });
+                SupabaseId = supabaseUser.Id,
+                CodeHash = codeHash,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(2),
+                CreatedAt = DateTime.UtcNow,
+                IsDeleted = false
+            };
+
+            await _emailVerificationRepo.Add(emailVerification);
+
+            // 3️⃣ Send email
+            await _mailgunService.SendVerificationEmail(
+                userDto.Email,
+                verificationCode
+            );
+      
+            var result = new EmailVerificationResultDto
+            {
+                Id = emailVerification.Id,
+            };
+
+
+            return result;
+        }
+
+        public async Task<User?> VerifyEmail(EmailVerificationVerifyDto verifyDto)
+        {
+
+            var emailVerification = await _emailVerificationRepo.GetById(verifyDto.Id);
+
+            if (emailVerification.ExpiresAt <= DateTime.UtcNow)
+            {
+                return null; // or return error: expired
+            }
+
+
+            var isValid = BCrypt.Net.BCrypt.Verify(
+                  verifyDto.SubmitCode,
+                  emailVerification.CodeHash
+              );
+
+            if (!isValid)
+                return null;
 
             var user = new User
             {
-                Id = dbUserName,
-                Email = userDto.Email,
-                SupabaseId = supabaseUser.Id,
+                Id = emailVerification.UserId,
+                Email = emailVerification.Email,
+                SupabaseId = emailVerification.SupabaseId,
                 CreatedAt = DateTime.UtcNow,
                 IsDeleted = false
 
@@ -47,7 +136,6 @@ namespace Application.Services
             await _userRepo.Add(user);
             return user;
         }
-
 
         public async Task<UserLoginResultDto> LoginAsync(UserLoginDto loginDto)
         {

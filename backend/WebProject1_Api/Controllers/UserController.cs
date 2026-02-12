@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.UserDto;
+using Application.DTOs.EmailVerificationDto;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 
@@ -34,6 +35,18 @@ namespace Presentation.Controllers
 
            return Ok(res);
         }
+
+        [HttpPost("VerifyEmail")]
+        [AllowAnonymous]
+        public async Task<ActionResult<User?>> VerifyEmail([FromBody] EmailVerificationVerifyDto verifyDto)
+        {
+            var res = await _userService.VerifyEmail(verifyDto);
+            if (res is null)
+                return BadRequest("User registration failed");
+
+            return Ok(res);
+        }
+
 
         [HttpPost("login")]
         [AllowAnonymous]
