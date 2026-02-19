@@ -101,5 +101,34 @@ namespace Infrastructure.Services
                 json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
             )!;
         }
+
+        public async Task<SupabaseUserDto?> GetUserByEmailAsync(string email)
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"{_supabaseUrl}/auth/v1/admin/users?email={Uri.EscapeDataString(email)}"
+            );
+
+            request.Headers.Add("apikey", _supabaseKey);
+            request.Headers.Add("Authorization", $"Bearer {_supabaseKey}");
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Supabase get user failed: {response.StatusCode} - {errorBody}");
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            var result = JsonSerializer.Deserialize<SupabaseAdminListResponse>(
+                json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            );
+
+            return result?.Users?.FirstOrDefault();
+        }
+
     }
 }
