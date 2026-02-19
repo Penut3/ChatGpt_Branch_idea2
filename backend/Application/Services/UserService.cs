@@ -58,6 +58,31 @@ namespace Application.Services
         {
 
             // need logic here to check if both User.Email and supabaseUser.Email exists.
+            var checkEmailExist = await _supabaseService.GetUserByEmailAsync(userDto.Email);
+            if (checkEmailExist != null) 
+            {
+                var dbUser = await _userRepo
+                .GetQueryable()
+                .FirstOrDefaultAsync(v => v.SupabaseId == checkEmailExist.Id);
+                if (dbUser != null)
+                {
+                    throw new Exception("A user with this email already exists");
+                }
+
+                await _supabaseService.DeleteUserByIdAsync(checkEmailExist.Id);
+
+                //Check if emailVerification exists
+                var checkEmailVerifcation = await _emailVerificationRepo
+                    .GetQueryable()
+                    .FirstOrDefaultAsync(u => u.Email == userDto.Email);
+
+                if(checkEmailVerifcation != null)
+                {
+                    await _emailVerificationRepo.Delete(checkEmailVerifcation);
+                }
+
+            }
+
             var userId = Guid.NewGuid();
 
             var supabaseUser = await _supabaseService.CreateAuthUserAsync(
@@ -151,7 +176,7 @@ namespace Application.Services
                 .FirstOrDefaultAsync(u => u.SupabaseId == supabaseId && !u.IsDeleted);
 
             if (user == null)
-                throw new UnauthorizedAccessException("User not found in local database");
+                throw new UnauthorizedAccessException("User not found in database");
 
           
             return new UserLoginResultDto

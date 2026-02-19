@@ -11,5 +11,7 @@ namespace Application.Interfaces.Services
     {
         Task<SupabaseUserDto> CreateAuthUserAsync(SupabaseCreateUserDto userDto);
         Task<SupabaseLoginResponseDto> SupabaseLoginAsync(string email, string password);
+        Task<SupabaseUserDto?> GetUserByEmailAsync(string email);
+        Task<bool> DeleteUserByIdAsync(string id);
     }
 }

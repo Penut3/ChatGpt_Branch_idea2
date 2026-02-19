@@ -22,7 +22,7 @@ public class DataContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Tree
+        // Tree / self refrencing
         modelBuilder.Entity<Chat>()
             .HasOne(c => c.ParentChat)
             .WithMany(c => c.ChildChats)
@@ -33,6 +33,11 @@ public class DataContext : DbContext
         modelBuilder.Entity<Chat>()
             .HasIndex(c => c.Createdby)
             .HasDatabaseName("IX_Chat_CreatedBy");
+
+        //Unique Index
+        modelBuilder.Entity<EmailVerification>()
+        .HasIndex(x => x.SupabaseId)
+        .IsUnique();
 
         // Grid 1 -> many chats
         modelBuilder.Entity<Grid>()
@@ -47,5 +52,8 @@ public class DataContext : DbContext
 
         modelBuilder.Entity<Grid>()
           .HasQueryFilter(c => !_currentUserId.HasValue || c.UserId == _currentUserId);
+
+      
+
     }
 }
