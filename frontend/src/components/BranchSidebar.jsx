@@ -10,6 +10,7 @@ import {
 import AltRouteIcon from "@mui/icons-material/AltRoute";
 import GridViewIcon from "@mui/icons-material/GridView";
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import UsbIcon from '@mui/icons-material/Usb';
 
 
 export default function BranchSidebar({
@@ -60,10 +61,18 @@ export default function BranchSidebar({
       
     <div style={{ display: "flex", width: "100%", marginBottom: "10px", marginTop:"10px"}}> 
           <div style={{backgroundColor:"white", borderRadius:"50%", padding:"1px", display:"flex", alignItems:"center", justifyContent:"center"}}>
-          <img src="/crab.png" style={{ height: "25px", width:"35px"}} alt="CrabGPT" />
+          {/* <img src="/contextreeLogo2.png" style={{ height: "25px", width:"35px"}} alt="CrabGPT" /> */}
+           <UsbIcon
+              sx={{
+                transform: "rotate(90deg)",
+                fontSize: 25,
+                color: "#000",
+                fill: "#000"
+              }}
+            />
           </div>
-          <h1 className="font1" style={{ color: "white", margin:"0px", marginLeft:"10px"}}>
-            CrabGPT
+          <h1 className="font1" style={{ color: "white", margin:"0px", marginLeft:"10px", fontSize:"20px"}}>
+            contextree.com
           </h1>
       </div>
       <Button
