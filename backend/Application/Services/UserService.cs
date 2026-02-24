@@ -74,9 +74,9 @@ namespace Application.Services
                 //Check if emailVerification exists
                 var checkEmailVerifcation = await _emailVerificationRepo
                     .GetQueryable()
-                    .FirstOrDefaultAsync(u => u.Email == userDto.Email);
+                    .FirstOrDefaultAsync(v => v.SupabaseId == checkEmailExist.Id);
 
-                if(checkEmailVerifcation != null)
+                if (checkEmailVerifcation != null)
                 {
                     await _emailVerificationRepo.Delete(checkEmailVerifcation);
                 }

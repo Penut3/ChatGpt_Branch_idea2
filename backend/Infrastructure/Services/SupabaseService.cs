@@ -104,6 +104,7 @@ namespace Infrastructure.Services
 
         public async Task<SupabaseUserDto?> GetUserByEmailAsync(string email)
         {
+            // 1. Prepare the request to the Supabase Auth Admin endpoint
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
                 $"{_supabaseUrl}/auth/v1/admin/users?email={Uri.EscapeDataString(email)}"
@@ -112,6 +113,7 @@ namespace Infrastructure.Services
             request.Headers.Add("apikey", _supabaseKey);
             request.Headers.Add("Authorization", $"Bearer {_supabaseKey}");
 
+            // 2. Execute the request
             var response = await _httpClient.SendAsync(request);
 
             if (!response.IsSuccessStatusCode)
@@ -120,19 +122,27 @@ namespace Infrastructure.Services
                 throw new Exception($"Supabase get user failed: {response.StatusCode} - {errorBody}");
             }
 
+            // 3. Parse the JSON response
             var json = await response.Content.ReadAsStringAsync();
 
             var result = JsonSerializer.Deserialize<SupabaseUserListDto>(
-                 json,
-                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-             );
+                json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            );
 
+            // 4. CRITICAL FIX: Explicitly verify the email match in code.
+            // This prevents "test@email.com" from accidentally matching "test2@email.com" 
+            // if the Supabase API returns multiple search results.
             if (result?.Users == null || result.Users.Count == 0)
+            {
                 return null;
+            }
 
-            return result.Users[0];
+            var exactMatch = result.Users.FirstOrDefault(u =>
+                string.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase));
+
+            return exactMatch;
         }
-
 
         public async Task<bool> DeleteUserByIdAsync(string id)
         {
