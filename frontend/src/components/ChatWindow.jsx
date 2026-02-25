@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@mui/material";
 import ReactMarkdown from "react-markdown";
 import CircularProgress from "@mui/material/CircularProgress";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import TurnLeftIcon from "@mui/icons-material/TurnLeft";
 import Tooltip from "@mui/material/Tooltip";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -84,20 +85,22 @@ const CodeBlock = ({ node, inline, className, children, ...props }) => {
         </Tooltip>
       </div>
 
-      {/* Code box */}
-      <SyntaxHighlighter
-        // style={materialOceanic}
+      {/* Code box */}  
+    <SyntaxHighlighter
         language={language}
+        style={vscDarkPlus}
         PreTag="div"
         customStyle={{
-          margin: 0,
-          backgroundColor: "black",
-          borderTop: "none",
-          borderRadius: "0 0 8px 8px",
+          backgroundColor: "black", // 🔹 This forces the main box to be black
           padding: "12px",
-          fontSize: "0.9rem",
+          borderRadius: "0 0 8px 8px",
+          margin: 0,
         }}
-        {...props}
+        codeTagProps={{
+          style: {
+            backgroundColor: "transparent", // 🔹 This removes the background from the code text
+          },
+        }}
       >
         {codeString}
       </SyntaxHighlighter>
@@ -154,16 +157,17 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
                   paddingBottom: "20px",
                 }}
               >
-                <div
-                  style={{
-                    backgroundColor: "var(--b-light-grey)",
-                    padding: "10px",
-                    borderRadius: "8px",
-                    boxShadow:"0 0 2px #181818"
-                  }}
-                >
-                  {item.prompt}
-                </div>
+             <pre
+              style={{
+                backgroundColor: "var(--b-light-grey)",
+                padding: "10px",
+                borderRadius: "8px",
+                boxShadow:"0 0 2px #181818",
+                fontFamily: "monospace", // optional for code look
+              }}
+            >
+              {item.prompt}
+            </pre>
               </div>
 
               {/* RESPONSE HEADER */}

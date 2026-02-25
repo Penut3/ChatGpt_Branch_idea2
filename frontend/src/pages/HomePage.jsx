@@ -31,7 +31,9 @@ export default function HomePage() {
   // INITIAL LOAD based on URL params
   // =====================
   useEffect(() => {
-    loadGrids(); // Always load grids for the sidebar
+     if (grids.length === 0) {
+      loadGrids();
+    }
 
     if (gridId && chatId) {
       // URL:  /chat/:gridId/:chatId -> show chat view
@@ -45,8 +47,8 @@ export default function HomePage() {
       setViewMode("grid");
     } else {
       // URL:  / -> default view (could show chat list or landing)
-      loadChats();
-      setViewMode("chat");
+      // loadChats();
+      // setViewMode("chat");
     }
   }, [gridId, chatId]);
 

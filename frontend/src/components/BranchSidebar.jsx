@@ -75,7 +75,7 @@ export default function BranchSidebar({
             contextree.com
           </h1>
       </div>
-      <Button
+      {/* <Button
         variant="contained"
         fullWidth
         onClick={onBackToChats}
@@ -83,7 +83,7 @@ export default function BranchSidebar({
       >
         <ChatBubbleOutlineIcon style={{padding:"2px"}} />
         <p style={{paddingLeft:"10px"}}> Chats </p>
-      </Button>
+      </Button> */}
 
       {/* New grid button */}
       <Button
