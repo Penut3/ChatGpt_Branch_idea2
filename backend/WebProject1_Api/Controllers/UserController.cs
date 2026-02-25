@@ -80,5 +80,15 @@ namespace Presentation.Controllers
             });
         }
 
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<ActionResult<object>> Me()
+        {
+            return Ok(new
+            {
+                authenticated = true,
+            });
+        }
     }
 }
