@@ -119,22 +119,33 @@ builder.Services.AddSingleton<ChatClient>(_ =>
 
 });
 
+// Detect environment
+var env = builder.Environment;
+
 // Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
-        policy.WithOrigins(
-                "http://localhost:3000",
-                "http://localhost:3001",  // dev
-                "https://witty-flower-0e3ae4303.3.azurestaticapps.net",
-                "http://localhost:5173"
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials()
-            // Optional if you need wildcard subdomains:
-            // .SetIsOriginAllowed(origin => new Uri(origin).Host.EndsWith(".yourdomain.com"))
-    );
+    {
+        // Common dev origins
+        var allowedOrigins = new List<string>
+        {
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "http://localhost:5173"
+        };
+
+        // Add production origin if in Production
+        if (env.IsProduction())
+        {
+            allowedOrigins.Add("https://www.contextree.com"); // your prod frontend URL
+        }
+
+        policy.WithOrigins(allowedOrigins.ToArray())
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
 var app = builder.Build();
