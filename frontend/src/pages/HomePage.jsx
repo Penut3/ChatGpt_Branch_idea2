@@ -25,7 +25,6 @@ export default function HomePage() {
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
 
- 
 
   // =====================
   // INITIAL LOAD based on URL params
