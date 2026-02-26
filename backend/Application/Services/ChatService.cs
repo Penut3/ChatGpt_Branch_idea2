@@ -29,44 +29,20 @@ namespace Application.Services
             _logger = logger;
             _currentUserId = currentUser.UserId;
         }
-        
-       public async Task<Chat> CreateChat(ChatCreateDto chatCreateDto)
+
+        public async IAsyncEnumerable<string> CreateChat(ChatCreateDto chatCreateDto)
         {
 
-            var messages = new List<AiMessage>
-            {
-                new AiMessage { Role = AiMessageRole.System, Content = "You are a helpful assistant." + "When you include code, use fenced code blocks with language tags " +
-                "like ```python or ```csharp."}
-            };
+            var messages = new List<AiMessage> { /* ... system prompt ... */ };
 
-            _logger.LogInformation("🧱 Added system prompt message.");
-
-            // Create chat chain
             if (chatCreateDto.ParentChatId.HasValue)
             {
-                _logger.LogInformation("🔍 Fetching chat chain for parentId={ParentId}", chatCreateDto.ParentChatId.Value);
-
                 var chain = await GetChatChainAsync(chatCreateDto.ParentChatId.Value);
-
-                _logger.LogInformation("📚 Chain contains {Count} messages.", chain.Count);
-
                 foreach (var chat in chain)
                 {
-                    _logger.LogInformation("📥 Adding past UserRequest: {Request}", chat.UserRequest);
-                    messages.Add(new AiMessage
-                    {
-                        Role = AiMessageRole.User,
-                        Content = chat.UserRequest
-                    });
-
+                    messages.Add(new AiMessage { Role = AiMessageRole.User, Content = chat.UserRequest });
                     if (!string.IsNullOrWhiteSpace(chat.Response))
-                    {
-                        messages.Add(new AiMessage
-                        {
-                            Role = AiMessageRole.Assistant,
-                            Content = chat.Response
-                        });
-                    }
+                        messages.Add(new AiMessage { Role = AiMessageRole.Assistant, Content = chat.Response });
                 }
             }
 
@@ -138,7 +114,14 @@ namespace Application.Services
             _logger.LogInformation("Preparing to send messages to AI: {Messages}",
     System.Text.Json.JsonSerializer.Serialize(messages));
             // Call AI service
-            var aiResponse = await _aiChatService.GetReplyAsync(messages);
+            var sb = new StringBuilder();
+            await foreach (var partial in _aiChatService.GetReplyAsync(messages))
+            {
+                sb.Append(partial);
+                yield return partial; // This sends the chunk to the controller immediately
+            }
+
+            var aiResponse = sb.ToString();
 
             _logger.LogInformation("response recived");
 
@@ -165,10 +148,10 @@ namespace Application.Services
             {
                 var parentChat = await _chatRepo.GetById(chatCreateDto.ParentChatId.Value);
                 rootChatId = parentChat.RootChatId ?? parentChat.Id;
-                _logger.LogInformation("🌳 Parent found → rootChatId={RootId}", rootChatId);               
+                _logger.LogInformation("🌳 Parent found → rootChatId={RootId}", rootChatId);
             }
 
-                var entity = new Chat
+            var entity = new Chat
                 {
                     Id = newChatId,
                     ChatTitle = chatTitle,
@@ -189,7 +172,7 @@ namespace Application.Services
 
             _logger.LogInformation("✅ Chat successfully created. ChatId={Id}", newChatId);
 
-            return entity;
+            yield return "[DONE]";
         }
 
 

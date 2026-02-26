@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,8 +22,9 @@ namespace Application.Interfaces.Services
             public string Content { get; set; }
         }
 
-        Task<string> GetReplyAsync(IReadOnlyList<AiMessage> messages);
+        IAsyncEnumerable<string> GetReplyAsync(List<AiMessage> messages, [EnumeratorCancellation] CancellationToken ct = default);
 
-       
+
+
     }
 }

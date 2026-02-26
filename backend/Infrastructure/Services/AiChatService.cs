@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces.Services;
 using OpenAI.Chat;
+using System.Runtime.CompilerServices;
 using static Application.Interfaces.Services.IAiChatService;
 
 public class AiChatService : IAiChatService
@@ -11,29 +12,30 @@ public class AiChatService : IAiChatService
         _client = client;
     }
 
-    public async Task<string> GetReplyAsync(IReadOnlyList<AiMessage> messages)
+    public async IAsyncEnumerable<string> GetReplyAsync(
+    List<AiMessage> messages,
+    [EnumeratorCancellation] CancellationToken ct = default)
     {
-        var openAiMessages = new List<ChatMessage>();
-
-        foreach (var msg in messages)
+        // 1. Map your messages to the SDK's ChatMessage type
+        List<ChatMessage> openAiMessages = messages.Select(msg => msg.Role switch
         {
-            switch (msg.Role)
+            AiMessageRole.System => (ChatMessage)new SystemChatMessage(msg.Content),
+            AiMessageRole.Assistant => new AssistantChatMessage(msg.Content),
+            _ => new UserChatMessage(msg.Content)
+        }).ToList();
+
+        
+        var stream = _client.CompleteChatStreamingAsync(openAiMessages, cancellationToken: ct);
+
+        await foreach (var update in stream)
+        {
+            foreach (var part in update.ContentUpdate)
             {
-                case AiMessageRole.System:
-                    openAiMessages.Add(new SystemChatMessage(msg.Content));
-                    break;
-                case AiMessageRole.Assistant:
-                    openAiMessages.Add(new AssistantChatMessage(msg.Content));
-                    break;
-                case AiMessageRole.User:
-                default:
-                    openAiMessages.Add(new UserChatMessage(msg.Content));
-                    break;
+                if (!string.IsNullOrEmpty(part.Text))
+                {
+                    yield return part.Text;
+                }
             }
         }
-
-        var result = await _client.CompleteChatAsync(openAiMessages);
-        var reply = result.Value.Content[0].Text;
-        return reply;
     }
 }
