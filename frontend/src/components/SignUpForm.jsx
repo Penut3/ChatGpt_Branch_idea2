@@ -2,6 +2,7 @@ import React, { useState, } from "react";
 import { Button, TextField } from '@mui/material';
 import "../styles/LoginForm.css";
 import { useNavigate, Link } from "react-router-dom";
+import { LoadingButton } from "@mui/lab";
 
 export default function SignUpForm() {
       const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function SignUpForm() {
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationObjectId, setVerificationObjectId] = useState("");
   const [step, setStep] = useState("signup"); // values: "signup" | "verify"
+  const [loading, setLoading] = useState(false);
 
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
@@ -26,6 +28,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
     return;
     }
 
+    setLoading(true);
 
     try {
       const res = await fetch(`${BACKEND_URL}Users/signup`, {
@@ -51,6 +54,9 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
       // TODO: navigate or store token here
     } catch (err) {
       console.error("Error sign up in:", err);
+       alert("Failed to sign up. Try again later")
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,6 +67,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
       return;
     }
 
+     setLoading(true);
     var id = verificationObjectId;
     var submitCode = verificationCode;
 
@@ -84,6 +91,8 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
       // TODO: navigate or store token here
     } catch (err) {
       console.error("Error logging in:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -145,7 +154,8 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
         />
 
       <div style={{ display: "flex"}}>
-        <Button
+        <LoadingButton
+          loading={loading}
           variant="contained"
           sx={{
             width: "100%",
@@ -158,7 +168,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
           onClick={handleSignUp} 
         >
           Sign up
-        </Button>
+        </LoadingButton>
     
       </div>
       <div style={{display:"flex", flexDirection:"row", paddingBottom:"10px"}}>
@@ -182,9 +192,10 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
           onChange={(e) => setVerificationCode(e.target.value)}
         />
 
-        <Button onClick={handleVerification}>
+        <LoadingButton onClick={handleVerification}
+        loading={loading}>
           Verify Email
-        </Button>
+        </LoadingButton>
       </>
     )}
     </div>

@@ -1,5 +1,6 @@
 import React, { useState, } from "react";
 import { Button, TextField } from '@mui/material';
+import { LoadingButton } from "@mui/lab";
 import "../styles/LoginForm.css";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -7,36 +8,40 @@ export default function LoginForm() {
       const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      alert("Please fill in both email and password");
-      return;
+const handleLogin = async () => {
+  if (!email || !password) {
+    alert("Please fill in both email and password");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const res = await fetch(`${BACKEND_URL}Users/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to login");
     }
 
-    try {
-      const res = await fetch(`${BACKEND_URL}Users/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to login");
-      }
-
-      const data = await res.json();
-      console.log("Logged in user:", data);
-      navigate("/")
-      
-      // TODO: navigate or store token here
-    } catch (err) {
-      console.error("Error logging in:", err);
-    }
-  };
+    const data = await res.json();
+    console.log("Logged in user:", data);
+    navigate("/");
+  } catch (err) {
+    console.error("Error logging in:", err);
+    alert("Error occured please try again")
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="login-form">
@@ -60,21 +65,22 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_API;
       />
 
       <div style={{ display: "flex"}}>
-        <Button
-          variant="contained"
-          sx={{
-            width: "100%",
-            backgroundColor: "black",
-            fontSize: "12px",
-            padding: "4px 8px",
-            textTransform: "none",
-            color: "white",
-          }}
-          onClick={handleLogin} 
-        >
-          Login
-        </Button>
-    
+     <LoadingButton
+        variant="contained"
+        loading={loading}
+        onClick={handleLogin}
+        sx={{
+          width: "100%",
+          backgroundColor: "black",
+          fontSize: "12px",
+          padding: "4px 8px",
+          textTransform: "none",
+          color: "white",
+        }}
+      >
+        Login
+      </LoadingButton>
+          
       </div>
       <div style={{display:"flex", flexDirection:"row", paddingBottom:"10px"}}>
             <p style={{color:"grey", fontSize:"10px", marginRight:"5px"}}>Or create an account</p>
