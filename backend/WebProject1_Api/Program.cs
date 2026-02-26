@@ -123,25 +123,37 @@ builder.Services.AddSingleton<ChatClient>(_ =>
 var env = builder.Environment;
 
 // Configure CORS
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("Frontend", policy =>
+//    {
+//        // Common dev origins
+//        var allowedOrigins = new List<string>
+//        {
+//            "http://localhost:3000",
+//            "http://localhost:3001",
+//            "http://localhost:5173"
+//        };
+
+//        // Add production origin if in Production
+//        if (env.IsProduction())
+//        {
+//            allowedOrigins.Add("https://www.contextree.com");
+//            allowedOrigins.Add("https://contextree.com");
+//        }
+
+//        policy.WithOrigins(allowedOrigins.ToArray())
+//              .AllowAnyHeader()
+//              .AllowAnyMethod()
+//              .AllowCredentials();
+//    });
+//});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        // Common dev origins
-        var allowedOrigins = new List<string>
-        {
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "http://localhost:5173"
-        };
-
-        // Add production origin if in Production
-        if (env.IsProduction())
-        {
-            allowedOrigins.Add("https://www.contextree.com"); // your prod frontend URL
-        }
-
-        policy.WithOrigins(allowedOrigins.ToArray())
+        policy.SetIsOriginAllowed(_ => true) // allow any origin
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
