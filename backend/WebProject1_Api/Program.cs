@@ -138,7 +138,8 @@ builder.Services.AddCors(options =>
         // Add production origin if in Production
         if (env.IsProduction())
         {
-            allowedOrigins.Add("https://www.contextree.com"); // your prod frontend URL
+            allowedOrigins.Add("https://www.contextree.com");
+            allowedOrigins.Add("https://contextree.com");
         }
 
         policy.WithOrigins(allowedOrigins.ToArray())
