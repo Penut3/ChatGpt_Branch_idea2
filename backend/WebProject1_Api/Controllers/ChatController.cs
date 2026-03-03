@@ -19,12 +19,17 @@ namespace API.Controllers
 
         [HttpPost("CreateChat")]
         [Authorize]
-        public async Task<IActionResult> CreateChat([FromBody] ChatCreateDto chatCreateDto) 
+        public async Task CreateChatStream([FromBody] ChatCreateDto chatCreateDto)
         {
-            var res = await _chatService.CreateChat(chatCreateDto);
-            return Ok(res);
-        }
+            Response.ContentType = "text/plain"; // Or "text/event-stream"
+            Response.Headers.Add("Cache-Control", "no-cache");
 
+            await foreach (var chunk in _chatService.CreateChat(chatCreateDto))
+            {
+                await Response.WriteAsync(chunk); // Send raw string
+                await Response.Body.FlushAsync(); // Push it to the client immediately
+            }
+        }
         [HttpGet("all")]
         [Authorize]
         public async Task<IActionResult> GetChats()

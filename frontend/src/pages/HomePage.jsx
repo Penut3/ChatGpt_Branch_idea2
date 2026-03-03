@@ -210,88 +210,99 @@ export default function HomePage() {
   // =====================
   // Send message
   // =====================
-  const handleSend = async (prompt) => {
-    if (!prompt.trim()) return;
-    setIsSending(true);
+const handleSend = async (prompt) => {
+  if (!prompt.trim()) return;
+  setIsSending(true);
 
-    const lastMessage = history[history.length - 1];
-    const parentChatId = lastMessage ?  lastMessage.chatId : null;
+  const lastMessage = history[history.length - 1];
+  const parentChatId = lastMessage ? lastMessage.chatId : null;
 
-    const isNewRootChat = ! parentChatId;
-    const currentGridId = isNewRootChat && selectedGridId ? selectedGridId :  null;
+  // 1. Add the user's message and a placeholder for the AI response
+  const tempMessage = {
+    prompt,
+    response: "", // Start empty for streaming
+    chatId: null,
+    rootChatId: lastMessage ? lastMessage.rootChatId : null,
+    isPending: true,
+  };
 
-    const tempMessage = {
-      prompt,
-      response: null,
-      chatId: null,
-      rootChatId: lastMessage ?  lastMessage.rootChatId :  null,
-      isPending: true,
-    };
+  setHistory((prev) => [...prev, tempMessage]);
 
-    setHistory((prev) => [...prev, tempMessage]);
+  try {
+    const res = await fetch(`${BACKEND_URL}chat/CreateChat`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "text/plain"
+      },
+      body: JSON.stringify({
+        userRequest: prompt,
+        parentChatId,
+        gridId: !parentChatId && selectedGridId ? selectedGridId : null,
+      }),
+      credentials: "include",
+    });
 
-    const body = {
-      userRequest: prompt,
-      parentChatId,
-      gridId: currentGridId,
-    };
+    if (!res.ok) throw new Error("Stream request failed");
 
-    try {
-      const res = await fetch(`${BACKEND_URL}chat/CreateChat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        credentials: "include",
-      });
+    // 2. Set up the stream reader
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let accumulatedResponse = "";
 
-      const created = await res.json();
-      const newRootId = created.rootChatId || created.id;
-      setIsSending(false);
+    // 3. Read the stream loop
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-      setHistory((prev) => {
-        const copy = [...prev];
-        const idx = [... copy]
-          .reverse()
-          .findIndex((m) => m.isPending && m.prompt === prompt);
-
-        if (idx === -1) return copy;
-
-        const realIdx = copy.length - 1 - idx;
-
-        copy[realIdx] = {
-          prompt: created.userRequest,
-          response: created. response,
-          chatId: created.id,
-          rootChatId: newRootId,
-        };
-
-        return copy;
-      });
-
-      // Update URL to show the new chat
-      if (selectedGridId) {
-        navigate(`/chat/${selectedGridId}/${created.id}`);
+      // Decode the chunk (Uint8Array to string)
+      const chunk = decoder.decode(value, { stream: true });
+      
+      // If your backend sends "[DONE]", we can stop or ignore it
+      if (chunk.includes("[DONE]")) {
+         // Note: In your C# code, the DB ID is generated AFTER the stream.
+         // We will handle fetching the final ID in the next step.
+         break; 
       }
 
-      await loadChats();
-    } catch (err) {
-      console.error("Error sending message:", err);
+      accumulatedResponse += chunk;
 
+      // 4. Update the specific message in history with the new text
       setHistory((prev) => {
-        const copy = [...prev];
-        const idx = copy.findIndex((m) => m.isPending && m.prompt === prompt);
-        if (idx === -1) return copy;
-
-        copy[idx] = {
-          ... copy[idx],
-          response: "Something went wrong sending this message.",
-          isPending: false,
+        const newHistory = [...prev];
+        const lastIdx = newHistory.length - 1;
+        newHistory[lastIdx] = {
+          ...newHistory[lastIdx],
+          response: accumulatedResponse,
         };
-
-        return copy;
+        return newHistory;
       });
     }
-  };
+
+    // 5. Finalizing: The AI is done "typing"
+    setIsSending(false);
+    setHistory((prev) => {
+      const newHistory = [...prev];
+      newHistory[newHistory.length - 1].isPending = false;
+      return newHistory;
+    });
+
+    // IMPORTANT: Since your C# code saves to the DB AFTER streaming,
+    // you might want to refresh the headers/sidebar to get the new Chat ID
+    await loadChats();
+
+  } catch (err) {
+    console.error("Error sending message:", err);
+    setIsSending(false);
+    setHistory((prev) => {
+      const newHistory = [...prev];
+      const lastIdx = newHistory.length - 1;
+      newHistory[lastIdx].response = "Error: Could not reach the AI.";
+      newHistory[lastIdx].isPending = false;
+      return newHistory;
+    });
+  }
+};
 
   // =====================
   // Branch from message

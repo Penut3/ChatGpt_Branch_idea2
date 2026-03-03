@@ -244,18 +244,12 @@ export default function ChatWindow({ history, onSend, loading, onBranchFromMessa
           ))
         )}
 
-        {history.length > 0 && loading && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              padding: "20px 0",
-            }}
-          >
-            <CircularProgress />
-          </div>
-        )}
-
+      {/* Change this condition */}
+      {history.length > 0 && loading && !history[history.length - 1].response && (
+        <div style={{ display: "flex", justifyContent: "center", padding: "20px 0" }}>
+          <CircularProgress />
+        </div>
+      )}
         <div ref={bottomRef} />
       </div>
 

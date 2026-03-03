@@ -10,7 +10,7 @@ namespace Application.Interfaces.Services
 {
     public interface IChatService
     {
-        Task<Chat> CreateChat(ChatCreateDto chatCreateDto);
+        IAsyncEnumerable<string> CreateChat(ChatCreateDto chatCreateDto);
         Task<IEnumerable<Chat>> GetAllChats();
 
         Task<IEnumerable<ChatGetChainDto>> GetChatById(Guid id);
